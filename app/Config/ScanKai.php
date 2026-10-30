@@ -12,7 +12,15 @@ class ScanKai extends BaseConfig
     /**
      * Application version (major.minor.patch, each 0-999).
      */
-    public string $version = '0.0.11';
+    public string $version = '0.0.12';
+
+    /**
+     * Logo and homepage of the operator, shown in the header next to the
+     * ScanKai logo. Leave the logo empty to hide it.
+     */
+    public string $operatorLogo = '/operator-logo.svg';
+    public string $operatorName = 'Skittel';
+    public string $operatorUrl  = 'https://www.skittel.de/';
 
     /**
      * Domain below which every tenant gets its own subdomain.

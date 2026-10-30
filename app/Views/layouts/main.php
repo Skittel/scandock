@@ -13,15 +13,19 @@
 </head>
 <body>
 <header class="topbar">
-    <a class="brand" href="/">
-        <img src="/logo-scankai.svg" alt="ScanKai">
+    <?php $scankai = config('ScanKai') ?>
+    <div class="brand">
+        <a href="/"><img src="/logo-scankai.svg" alt="ScanKai"></a>
+        <?php if ($scankai->operatorLogo !== ''): ?>
+            <a class="operator" href="<?= esc($scankai->operatorUrl, 'attr') ?>" target="_blank" rel="noopener"><img src="<?= esc($scankai->operatorLogo, 'attr') ?>" alt="<?= esc($scankai->operatorName, 'attr') ?>"></a>
+        <?php endif ?>
         <?php if (! empty($tenant['name'])): ?>
-            <span class="tenant">
+            <a class="tenant" href="/">
                 <?php if (! empty($tenant['logo_file'])): ?><img src="/branding/logo?v=<?= esc($tenant['logo_file'], 'url') ?>" alt=""><?php endif ?>
                 <?= esc($tenant['name']) ?>
-            </span>
+            </a>
         <?php endif ?>
-    </a>
+    </div>
     <?php if (! empty($user)): ?>
     <nav>
         <a href="/scans">Scans</a>
