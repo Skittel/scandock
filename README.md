@@ -55,6 +55,12 @@ the scans. Scans are deleted automatically after a configurable number of days
 CodeIgniter 4 · PHP 8.4+ · Apache · MariaDB · ProFTPD (mod_sql, mod_tls) ·
 poppler-utils · certbot
 
+## Installation
+
+See [INSTALL.md](INSTALL.md) for setting up ScanDock on an empty Ubuntu
+server. **The guide is untested** – it was written from the production
+configuration and has not yet been run on a fresh machine.
+
 ## Operations
 
 ```bash
