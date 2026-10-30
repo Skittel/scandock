@@ -12,7 +12,7 @@ class ScanDock extends BaseConfig
     /**
      * Application version (major.minor.patch, each 0-999).
      */
-    public string $version = '0.0.29';
+    public string $version = '0.0.30';
 
     /**
      * Logo and homepage of the operator, shown in the header next to the
@@ -21,6 +21,11 @@ class ScanDock extends BaseConfig
     public string $operatorLogo = '/operator-logo.svg';
     public string $operatorName = 'Skittel';
     public string $operatorUrl  = 'https://www.skittel.de/';
+
+    /**
+     * Help for users (button in the header, opens in a new tab).
+     */
+    public string $helpUrl = 'https://wiki.skit.center/books/scandockpub/chapter/benutzer';
 
     /**
      * Domain below which every tenant gets its own subdomain.

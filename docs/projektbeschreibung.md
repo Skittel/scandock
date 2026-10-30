@@ -1,6 +1,6 @@
 # Projektbeschreibung ScanDock
 
-*Stand: 2026-10-30 · Version 0.0.29 (erster Kunde aktiv; bis 0.0.18 hieß das Projekt ScanKai)*
+*Stand: 2026-10-30 · Version 0.0.30 (erster Kunde aktiv; bis 0.0.18 hieß das Projekt ScanKai)*
 
 ## Problem
 Kunden mit Kopierern/MFPs ziehen in die Cloud (Microsoft 365). Selbst neue Geräte können nicht nach SharePoint oder auf SMB-Freigaben in der Cloud scannen. Viele Geräte können außerdem nur unverschlüsseltes FTP.
@@ -34,6 +34,9 @@ ScanDock ist für **Kopierer und Multifunktionsgeräte** gedacht, nicht als Plat
 - Tägliche lokale Datensicherung (letzte 30), externe Sicherung als ToDo.
 - Maximal 50 MB pro Datei, durchgesetzt vom FTP-Server. Abgebrochene Uploads werden wie andere abgelehnte Dateien angezeigt. Unter 10 GB freiem Speicher wird der Empfang automatisch gesperrt (Hinweis für alle Benutzer).
 - Dateinamen werden normalisiert (Umlaute → ae/oe/ue/ss, nur a–z/A–Z/0–9, max. 30 Zeichen ohne Endung).
+
+## Hilfe für Kunden
+Button **Hilfe** in der Anwendung → öffentliches Support-Wiki https://wiki.skit.center/books/scandockpub (Deutsch; Teile *Benutzer* und *Verwaltung (Admins)*). Die CLI ist nur für den Betreiber und wird dort nicht beschrieben.
 
 ## Eckdaten
 | Punkt | Wert |

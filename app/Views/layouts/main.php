@@ -28,6 +28,10 @@
         <?php endif ?>
     </div>
     <?php if (! empty($user)): ?>
+    <div class="header-actions">
+    <?php if ($scandock->helpUrl !== ''): ?>
+        <a class="button small secondary help" href="<?= esc($scandock->helpUrl, 'attr') ?>" target="_blank" rel="noopener">Hilfe</a>
+    <?php endif ?>
     <details class="user-menu">
         <summary title="<?= esc($user['name'], 'attr') ?>"><?= esc($user['upn'] !== '' ? $user['upn'] : $user['name']) ?></summary>
         <div class="menu">
@@ -47,6 +51,7 @@
             <?= form_open('auth/logout') ?><button class="item">Abmelden</button><?= form_close() ?>
         </div>
     </details>
+    </div>
     <script src="/js/user-menu.js?v=<?= esc(config('ScanDock')->version) ?>" defer></script>
     <?php endif ?>
 </header>

@@ -146,3 +146,5 @@ details.account.view-list .list-toolbar { display:flex; }
 .scan-list .col-check input { width:16px; height:16px; cursor:pointer; accent-color:var(--accent); }
 .nowrap { white-space:nowrap; }
 .table.journal td { vertical-align:top; }
+.header-actions { display:flex; align-items:center; gap:.6rem; }
+.header-actions .help { border-radius:20px; padding:.35rem .9rem; }
