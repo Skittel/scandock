@@ -181,7 +181,7 @@ class ScanStore
                         $count++;
                     }
                 } catch (\Throwable $e) {
-                    log_message('error', 'Ingest of {name} failed: {msg}', ['name' => $path, 'msg' => $e->getMessage()]);
+                    log_message('error', 'Ingest of {name} failed: {msg}', ['name' => json_encode($path), 'msg' => $e->getMessage()]);
                 }
             }
         }
@@ -211,9 +211,9 @@ class ScanStore
                 }
                 // HiddenStores: ".in.<name>." while the transfer is running.
                 if (preg_match('/^\.in\.(.+)\.$/s', $name, $m) === 1) {
-                    $pending[$accountId][] = ['name' => $m[1], 'state' => 'uploading', 'size' => (int) filesize($path)];
+                    $pending[$accountId][] = ['name' => ScanFileName::forDisplay($m[1]), 'state' => 'uploading', 'size' => (int) filesize($path)];
                 } elseif ($name[0] !== '.') {
-                    $pending[$accountId][] = ['name' => $name, 'state' => 'processing', 'size' => (int) filesize($path)];
+                    $pending[$accountId][] = ['name' => ScanFileName::forDisplay($name), 'state' => 'processing', 'size' => (int) filesize($path)];
                 }
             }
         }
@@ -329,10 +329,12 @@ class ScanStore
 
     private function ingestFile(array $account, string $path, string $name): bool
     {
-        $type   = FileInspector::typeForName($name);
+        // File names from FTP are never used as delivered (see ScanFileName).
+        $ext    = ScanFileName::split($name)['ext'];
+        $type   = strlen($ext) <= ScanFileName::MAX_EXT ? FileInspector::typeForName($name) : null;
         $size   = (int) filesize($path);
         $reason = match (true) {
-            $type === null => sprintf('Dateityp „.%s“ ist nicht erlaubt (erlaubt: PDF, JPG, PNG, TIFF).', mb_substr(pathinfo($name, PATHINFO_EXTENSION) ?: '?', 0, 10)),
+            $type === null => sprintf('Dateityp „.%s“ ist nicht erlaubt (erlaubt: PDF, JPG, PNG, TIFF).', $ext === '' ? '–' : substr($ext, 0, 10)),
             $size > $this->config->maxUploadBytes => sprintf(
                 'Die Datei ist %s MB groß, erlaubt sind höchstens %d MB.',
                 number_format($size / 1048576, 1, ',', '.'),
@@ -351,7 +353,7 @@ class ScanStore
         $scan       = [
             'tenant_id'      => $account['tenant_id'],
             'ftp_account_id' => $account['id'],
-            'original_name'  => mb_substr($name, 0, 255),
+            'original_name'  => ScanFileName::forScan($name, (int) $account['id']),
             'stored_name'    => $storedName,
             'file_ext'       => $type,
             'encrypted'      => 1,
@@ -396,7 +398,7 @@ class ScanStore
             }
         } catch (\Throwable $e) {
             // The upload stays in the incoming directory and is retried later.
-            log_message('error', 'Could not store upload {name}: {msg}', ['name' => $path, 'msg' => $e->getMessage()]);
+            log_message('error', 'Could not store upload {name}: {msg}', ['name' => json_encode($path), 'msg' => $e->getMessage()]);
             foreach ($files ?? [] as [, $cipher]) {
                 @unlink($cipher);
             }
@@ -424,13 +426,13 @@ class ScanStore
         model(ScanRejectionModel::class)->insert([
             'tenant_id'      => $account['tenant_id'],
             'ftp_account_id' => $account['id'],
-            'original_name'  => mb_substr($name, 0, 255),
+            'original_name'  => ScanFileName::forDisplay($name),
             'size'           => (int) @filesize($path),
             'reason'         => $reason,
         ]);
-        log_message('warning', 'Rejected upload {name} of FTP account {id}: {reason}', ['name' => $name, 'id' => $account['id'], 'reason' => $reason]);
+        log_message('warning', 'Rejected upload {name} of FTP account {id}: {reason}', ['name' => json_encode($name), 'id' => $account['id'], 'reason' => $reason]);
         service('audit')->record((int) $account['tenant_id'], 'scan.rejected', [
-            'file'    => mb_substr($name, 0, 255),
+            'file'    => ScanFileName::forDisplay($name),
             'account' => $account['label'],
             'reason'  => $reason,
         ], 'System (FTP)');
