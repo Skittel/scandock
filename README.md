@@ -64,7 +64,7 @@ The logo sources are in [`resources/logo/`](resources/logo/).
 
 Backups: `deploy/sbin/scandock-backup` (cron daily 03:00, `deploy/cron/scandock-backup`)
 writes `/backup/<yyyymmdd-hhiiss>.tgz` with database dump, scans, project (incl.
-`.env`) and server configuration, plus a log with the same name and a summary.
+`.env`) and server configuration, plus a log with the same name and a summary. The newest 30 backups are kept.
 
 `scandock` is a wrapper that runs `php spark` as `www-data`. Server configuration
 (ProFTPD, AppArmor, systemd units, vhost helper, fail2ban) lives in

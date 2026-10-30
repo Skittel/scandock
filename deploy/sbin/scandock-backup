@@ -5,7 +5,8 @@
 # The archive contains the encryption key (.env) together with the encrypted
 # scans, so it must be protected like the server itself (mode 0600, root).
 #
-# Run by cron (/etc/cron.d/scandock-backup) daily at 03:00.
+# Run by cron (/etc/cron.d/scandock-backup) daily at 03:00. The newest
+# $KEEP backups are kept, older ones are removed after a successful run.
 set -uo pipefail
 
 BACKUP_DIR=/backup
@@ -13,6 +14,7 @@ STAMP=$(date +%Y%m%d-%H%M%S)
 ARCHIVE="$BACKUP_DIR/$STAMP.tgz"
 LOG="$BACKUP_DIR/$STAMP.log"
 DB_NAME=scandock
+KEEP=30
 START=$(date +%s)
 ERRORS=0
 WORK=""
@@ -138,7 +140,35 @@ fi
 SHA=$(sha256sum "$ARCHIVE" 2>/dev/null | cut -d' ' -f1)
 log "   SHA-256: ${SHA:-?}"
 
-# --- 5. Summary -----------------------------------------------------------------------
+# --- 5. Retention ---------------------------------------------------------------------
+# Only after a successful run, so a failing backup never removes good ones.
+log "4. Alte Sicherungen aufräumen (die letzten $KEEP behalten)"
+REMOVED=0
+if [ "$ERRORS" -eq 0 ]; then
+    mapfile -t OLD < <(find "$BACKUP_DIR" -maxdepth 1 -type f -regextype posix-extended \
+        -regex '.*/[0-9]{8}-[0-9]{6}\.tgz' -printf '%f\n' | sort -r | tail -n +$((KEEP + 1)))
+    for f in "${OLD[@]}"; do
+        rm -f -- "$BACKUP_DIR/$f" "$BACKUP_DIR/${f%.tgz}.log" && REMOVED=$((REMOVED + 1))
+        log "   gelöscht: $f (+ Log)"
+    done
+    # Logs of failed runs that are older than the oldest kept backup.
+    OLDEST=$(find "$BACKUP_DIR" -maxdepth 1 -type f -regextype posix-extended \
+        -regex '.*/[0-9]{8}-[0-9]{6}\.tgz' -printf '%f\n' | sort | head -1)
+    if [ -n "$OLDEST" ]; then
+        while read -r f; do
+            if [[ "$f" < "${OLDEST%.tgz}.log" ]]; then
+                rm -f -- "$BACKUP_DIR/$f"
+                log "   gelöscht: $f (Log ohne Archiv)"
+            fi
+        done < <(find "$BACKUP_DIR" -maxdepth 1 -type f -regextype posix-extended \
+            -regex '.*/[0-9]{8}-[0-9]{6}\.log' -printf '%f\n')
+    fi
+    log "   ok: $REMOVED alte Sicherung(en) gelöscht"
+else
+    log "   übersprungen, weil diese Sicherung Fehler hatte"
+fi
+
+# --- 6. Summary -----------------------------------------------------------------------
 END=$(date +%s)
 FREE=$(df -h "$BACKUP_DIR" | awk 'NR==2 {print $4 " frei (" $5 " belegt)"}')
 COUNT=$(find "$BACKUP_DIR" -maxdepth 1 -name '*.tgz' | wc -l)
@@ -151,6 +181,7 @@ COUNT=$(find "$BACKUP_DIR" -maxdepth 1 -name '*.tgz' | wc -l)
     echo "Dateien:       ${FILES:-0}"
     echo "Datenbank:     ${TABLES:-?} Tabellen/Views, ${SCAN_ROWS:-?} Scans"
     echo "Dauer:         $((END - START)) s"
+    echo "Aufbewahrung:  letzte $KEEP Sicherungen, ${REMOVED:-0} alte gelöscht"
     echo "Speicherplatz: $FREE, $COUNT Sicherungen in $BACKUP_DIR"
     echo "SHA-256:       ${SHA:-?}"
     echo "========================================================="
