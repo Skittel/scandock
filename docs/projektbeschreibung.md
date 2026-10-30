@@ -1,6 +1,6 @@
 # Projektbeschreibung ScanDock
 
-*Stand: 2026-10-30 · Version 0.0.30 (erster Kunde aktiv; bis 0.0.18 hieß das Projekt ScanKai)*
+*Stand: 2026-10-30 · Version 0.0.33 (erster Kunde aktiv; bis 0.0.18 hieß das Projekt ScanKai)*
 
 ## Problem
 Kunden mit Kopierern/MFPs ziehen in die Cloud (Microsoft 365). Selbst neue Geräte können nicht nach SharePoint oder auf SMB-Freigaben in der Cloud scannen. Viele Geräte können außerdem nur unverschlüsseltes FTP.
