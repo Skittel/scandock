@@ -12,7 +12,7 @@ class ScanDock extends BaseConfig
     /**
      * Application version (major.minor.patch, each 0-999).
      */
-    public string $version = '0.0.23';
+    public string $version = '0.0.24';
 
     /**
      * Logo and homepage of the operator, shown in the header next to the
@@ -58,6 +58,11 @@ class ScanDock extends BaseConfig
      * Default retention for new tenants in days.
      */
     public int $defaultRetentionDays = 30;
+
+    /**
+     * Admin journal entries older than this are deleted by the daily purge.
+     */
+    public int $auditRetentionDays = 365;
 
     /**
      * Admins are warned this many days before the Entra client secret expires.

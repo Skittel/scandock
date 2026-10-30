@@ -230,6 +230,9 @@ class ScanStore
     {
         $count = 0;
         model(ScanRejectionModel::class)->where('created_at <', date('Y-m-d H:i:s', strtotime('-30 days')))->delete();
+        model(\App\Models\AuditLogModel::class)
+            ->where('created_at <', date('Y-m-d H:i:s', strtotime('-' . $this->config->auditRetentionDays . ' days')))
+            ->delete();
 
         foreach (model(TenantModel::class)->findAll() as $tenant) {
             $cutoff = date('Y-m-d H:i:s', strtotime('-' . max(1, (int) $tenant['retention_days']) . ' days'));

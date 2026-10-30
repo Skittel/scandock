@@ -11,7 +11,7 @@
         </select>
     </form>
 </div>
-<p class="hint">Änderungen an Einstellungen und FTP-Konten sowie eingegangene, abgelehnte und gelöschte Scans. Anmeldungen und Downloads werden nicht protokolliert.</p>
+<p class="hint">Änderungen an Einstellungen und FTP-Konten sowie eingegangene, abgelehnte und gelöschte Scans. Anmeldungen und Downloads werden nicht protokolliert. Einträge werden nach einem Jahr gelöscht.</p>
 
 <?php if ($entries === []): ?>
     <div class="card"><p>Keine Einträge vorhanden.</p></div>
