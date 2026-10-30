@@ -1,0 +1,4 @@
+# ScanDock: daily backup to /backup (archive + log named yyyymmdd-hhiiss)
+SHELL=/bin/bash
+PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+0 3 * * * root /usr/local/sbin/scandock-backup

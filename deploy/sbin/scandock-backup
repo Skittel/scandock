@@ -1,0 +1,160 @@
+#!/bin/bash
+# ScanDock: daily backup of configuration, database, scans and project.
+#
+# Creates /backup/<yyyymmdd-hhiiss>.tgz and a log file with the same name.
+# The archive contains the encryption key (.env) together with the encrypted
+# scans, so it must be protected like the server itself (mode 0600, root).
+#
+# Run by cron (/etc/cron.d/scandock-backup) daily at 03:00.
+set -uo pipefail
+
+BACKUP_DIR=/backup
+STAMP=$(date +%Y%m%d-%H%M%S)
+ARCHIVE="$BACKUP_DIR/$STAMP.tgz"
+LOG="$BACKUP_DIR/$STAMP.log"
+DB_NAME=scandock
+START=$(date +%s)
+ERRORS=0
+WORK=""
+
+umask 077
+mkdir -p "$BACKUP_DIR"
+chmod 700 "$BACKUP_DIR"
+
+log() { printf '%s  %s\n' "$(date '+%Y-%m-%d %H:%M:%S')" "$*" >> "$LOG"; }
+fail() { log "FEHLER: $*"; ERRORS=$((ERRORS + 1)); }
+human() { numfmt --to=iec --suffix=B "$1" 2>/dev/null || echo "$1 B"; }
+
+cleanup() { [ -n "$WORK" ] && rm -rf -- "$WORK"; }
+trap cleanup EXIT
+
+# Only one backup at a time.
+exec 9>/run/scandock-backup.lock
+if ! flock -n 9; then
+    log "FEHLER: Eine andere Sicherung läuft bereits – abgebrochen."
+    exit 1
+fi
+
+log "ScanDock-Datensicherung gestartet ($(hostname -f 2>/dev/null || hostname))"
+log "Ziel: $ARCHIVE"
+
+WORK=$(mktemp -d /root/scandock-backup.XXXXXX)
+
+# --- 1. Database --------------------------------------------------------------
+log "1. Datenbank '$DB_NAME' sichern"
+if mariadb-dump --single-transaction --routines --triggers --events --databases "$DB_NAME" > "$WORK/database.sql" 2>> "$LOG"; then
+    TABLES=$(mariadb -N -e "SELECT COUNT(*) FROM information_schema.tables WHERE table_schema='$DB_NAME'")
+    log "   ok: $TABLES Tabellen/Views, Dump $(human "$(stat -c %s "$WORK/database.sql")")"
+    for t in tenants users ftp_accounts scans scan_rejections; do
+        log "   $t: $(mariadb -N -e "SELECT COUNT(*) FROM $DB_NAME.$t") Zeilen"
+    done
+else
+    fail "mariadb-dump fehlgeschlagen"
+fi
+
+log "   Datenbank-Benutzer und Rechte sichern"
+{
+    for account in "'scandock'@'localhost'" "'scandock_ftp'@'127.0.0.1'"; do
+        mariadb -N -e "SHOW CREATE USER $account; SHOW GRANTS FOR $account" | sed 's/$/;/'
+    done
+} > "$WORK/database-users.sql" 2>> "$LOG" || fail "Datenbank-Benutzer konnten nicht gesichert werden"
+
+# --- 2. Inventory ---------------------------------------------------------------
+cat > "$WORK/README.txt" <<EOF
+ScanDock backup $STAMP from $(hostname -f 2>/dev/null || hostname)
+
+database.sql        mariadb-dump of '$DB_NAME' (restore: mariadb < database.sql)
+database-users.sql  CREATE USER / GRANT statements of the application users
+srv/scandock        scans (encrypted, *.enc) and upload directories
+var/www/scandock    project incl. .env (contains encryption.key, needed to decrypt scans!)
+etc/, usr/local/    server configuration, certificates, helper scripts
+root/.secrets       credentials (database, wiki)
+EOF
+
+# --- 3. Archive -------------------------------------------------------------------
+PATHS=(
+    var/www/scandock
+    srv/scandock
+    etc/proftpd
+    etc/apache2
+    etc/php/8.5/apache2/conf.d/99-scandock.ini
+    etc/php/8.5/cli/conf.d/99-scandock.ini
+    etc/letsencrypt
+    etc/systemd/system/scandock-ingest.service
+    etc/systemd/system/scandock-ingest.timer
+    etc/systemd/system/scandock-purge.service
+    etc/systemd/system/scandock-purge.timer
+    etc/systemd/system/scandock-upload-watch.service
+    etc/sudoers.d/scandock
+    etc/fail2ban/jail.d/scandock.conf
+    etc/apparmor.d/local/proftpd
+    etc/apparmor.d/local/qpdf
+    etc/ufw
+    etc/cron.d/scandock-backup
+    etc/hosts
+    etc/hostname
+    usr/local/sbin/scandock-site
+    usr/local/sbin/scandock-upload-watch
+    usr/local/sbin/scandock-backup
+    usr/local/bin/scandock
+    root/.secrets
+    root/scandock-ki-overview
+)
+EXISTING=()
+for p in "${PATHS[@]}"; do
+    if [ -e "/$p" ]; then EXISTING+=("$p"); else log "   Hinweis: /$p nicht vorhanden, übersprungen"; fi
+done
+
+log "2. Archiv erstellen (${#EXISTING[@]} Pfade + Datenbank)"
+if tar -czf "$ARCHIVE" \
+        --exclude='var/www/scandock/writable/cache/*' \
+        --exclude='var/www/scandock/writable/session/*' \
+        --exclude='var/www/scandock/writable/debugbar/*' \
+        -C "$WORK" database.sql database-users.sql README.txt \
+        -C / "${EXISTING[@]}" 2>> "$LOG"; then
+    log "   ok: $(human "$(stat -c %s "$ARCHIVE")")"
+else
+    fail "tar meldet einen Fehler"
+fi
+chmod 600 "$ARCHIVE" 2>/dev/null
+
+# --- 4. Verification ----------------------------------------------------------------
+log "3. Archiv prüfen"
+if LIST=$(tar -tzf "$ARCHIVE" 2>> "$LOG"); then
+    FILES=$(grep -vc '/$' <<< "$LIST")
+    log "   ok: Archiv lesbar, $FILES Dateien"
+    for must in database.sql var/www/scandock/.env var/www/scandock/spark etc/proftpd/proftpd.conf root/.secrets/scandock-db.env; do
+        grep -qx "$must" <<< "$LIST" || fail "   $must fehlt im Archiv"
+    done
+    SCAN_FILES=$(grep -c '^srv/scandock/storage/.*\.enc$' <<< "$LIST")
+    SCAN_ROWS=$(mariadb -N -e "SELECT COUNT(*) FROM $DB_NAME.scans" 2>/dev/null || echo "?")
+    log "   Scan-Dateien (verschlüsselt) im Archiv: $SCAN_FILES, Scans in der Datenbank: $SCAN_ROWS"
+    PLAIN=$(grep -c '^srv/scandock/storage/[0-9]*/[^/]*\.\(pdf\|jpg\|png\|tif\)$' <<< "$LIST")
+    [ "$PLAIN" -gt 0 ] && log "   Hinweis: $PLAIN unverschlüsselte Scan-Dateien gefunden (scandock scans:encrypt ausführen)"
+else
+    fail "Archiv ist nicht lesbar"
+    FILES=0
+fi
+SHA=$(sha256sum "$ARCHIVE" 2>/dev/null | cut -d' ' -f1)
+log "   SHA-256: ${SHA:-?}"
+
+# --- 5. Summary -----------------------------------------------------------------------
+END=$(date +%s)
+FREE=$(df -h "$BACKUP_DIR" | awk 'NR==2 {print $4 " frei (" $5 " belegt)"}')
+COUNT=$(find "$BACKUP_DIR" -maxdepth 1 -name '*.tgz' | wc -l)
+{
+    echo
+    echo "==================== ZUSAMMENFASSUNG ===================="
+    echo "Status:        $([ "$ERRORS" -eq 0 ] && echo 'OK' || echo "FEHLER ($ERRORS)")"
+    echo "Archiv:        $ARCHIVE"
+    echo "Größe:         $(human "$(stat -c %s "$ARCHIVE" 2>/dev/null || echo 0)")"
+    echo "Dateien:       ${FILES:-0}"
+    echo "Datenbank:     ${TABLES:-?} Tabellen/Views, ${SCAN_ROWS:-?} Scans"
+    echo "Dauer:         $((END - START)) s"
+    echo "Speicherplatz: $FREE, $COUNT Sicherungen in $BACKUP_DIR"
+    echo "SHA-256:       ${SHA:-?}"
+    echo "========================================================="
+} >> "$LOG"
+chmod 600 "$LOG"
+
+exit $([ "$ERRORS" -eq 0 ] && echo 0 || echo 1)
