@@ -4,6 +4,7 @@ namespace App\Controllers;
 
 use App\Models\FtpAccountModel;
 use App\Models\ScanModel;
+use App\Models\UserModel;
 use CodeIgniter\Exceptions\PageNotFoundException;
 use CodeIgniter\HTTP\ResponseInterface;
 
@@ -12,29 +13,50 @@ use CodeIgniter\HTTP\ResponseInterface;
  */
 class Scans extends BaseController
 {
+    /**
+     * Scan list grouped by FTP account (one collapsible section per account).
+     */
     public function index(): string
     {
         $tenant     = $this->tenant();
-        $accountIds = service('scanAccess')->visibleAccountIds($tenant, $this->currentUser());
-        $filter     = (int) $this->request->getGet('account');
+        $user       = $this->currentUser();
+        $accountIds = service('scanAccess')->visibleAccountIds($tenant, $user);
+        $accounts   = $accountIds === [] ? [] : model(FtpAccountModel::class)->whereIn('id', $accountIds)->orderBy('label')->findAll();
 
-        $scans = [];
-        if ($accountIds !== []) {
-            $query = model(ScanModel::class)->where('tenant_id', $tenant['id'])
-                ->whereIn('ftp_account_id', $filter > 0 && in_array($filter, $accountIds, true) ? [$filter] : $accountIds)
-                ->orderBy('received_at', 'DESC');
-            $scans = $query->paginate(48);
+        $sections = [];
+        $scans    = model(ScanModel::class);
+        foreach ($accounts as $account) {
+            $group      = 'a' . $account['id'];
+            $sections[] = [
+                'account' => $account,
+                'scans'   => $scans->where('tenant_id', $tenant['id'])->where('ftp_account_id', $account['id'])
+                    ->orderBy('received_at', 'DESC')->paginate(24, $group),
+                'total'   => $scans->pager->getTotal($group),
+                'group'   => $group,
+            ];
         }
 
-        $accounts = $accountIds === [] ? [] : model(FtpAccountModel::class)->whereIn('id', $accountIds)->orderBy('label')->findAll();
-
         return $this->render('scans/index', [
-            'scans'    => $scans,
-            'pager'    => $accountIds === [] ? null : model(ScanModel::class)->pager,
-            'accounts' => array_column($accounts, null, 'id'),
-            'filter'   => $filter,
-            'expires'  => (int) $tenant['retention_days'],
+            'sections'  => $sections,
+            'pager'     => $scans->pager,
+            'collapsed' => UserModel::collapsedAccounts($user),
+            'expires'   => (int) $tenant['retention_days'],
         ]);
+    }
+
+    /**
+     * Stores which account sections the user collapsed (sent by the page as JSON).
+     */
+    public function saveCollapsed(): ResponseInterface
+    {
+        $user    = $this->currentUser();
+        $visible = service('scanAccess')->visibleAccountIds($this->tenant(), $user);
+        $ids     = array_map('intval', (array) ($this->request->getJSON(true)['collapsed'] ?? []));
+        $ids     = array_values(array_unique(array_intersect($ids, $visible)));
+
+        model(UserModel::class)->update($user['id'], ['collapsed_accounts' => json_encode($ids)]);
+
+        return $this->response->setJSON(['ok' => true]);
     }
 
     public function view(int $id): ResponseInterface

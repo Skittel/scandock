@@ -12,7 +12,7 @@ class UserModel extends Model
     protected $table         = 'users';
     protected $returnType    = 'array';
     protected $useTimestamps = true;
-    protected $allowedFields = ['tenant_id', 'entra_oid', 'upn', 'name', 'group_ids', 'last_login_at'];
+    protected $allowedFields = ['tenant_id', 'entra_oid', 'upn', 'name', 'group_ids', 'collapsed_accounts', 'last_login_at'];
 
     /**
      * Creates or updates the user from validated ID token claims.
@@ -46,6 +46,16 @@ class UserModel extends Model
     public function updateGroups(int $userId, array $groupIds): void
     {
         $this->update($userId, ['group_ids' => json_encode(array_values($groupIds))]);
+    }
+
+    /**
+     * IDs of the FTP account sections the user collapsed on the scan page.
+     *
+     * @return list<int>
+     */
+    public static function collapsedAccounts(array $user): array
+    {
+        return array_map('intval', json_decode($user['collapsed_accounts'] ?? '[]', true) ?: []);
     }
 
     /**

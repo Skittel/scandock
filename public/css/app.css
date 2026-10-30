@@ -59,3 +59,14 @@ button.link { background:none; border:0; color:var(--accent); cursor:pointer; fo
 .icon-button:hover { color:var(--accent); border-color:var(--accent); }
 .suggestions li.note { cursor:default; color:var(--muted); font-size:.85rem; background:#fafbfc; }
 .suggestions li.note:hover { background:#fafbfc; }
+.button.secondary { background:#fff; color:var(--accent); border:1px solid var(--accent); }
+.accordion { display:flex; flex-direction:column; gap:.8rem; }
+details.account { background:var(--card); border:1px solid var(--line); border-radius:8px; }
+details.account > summary { display:flex; align-items:center; gap:.7rem; padding:.8rem 1.1rem; cursor:pointer; list-style:none; user-select:none; }
+details.account > summary::-webkit-details-marker { display:none; }
+details.account > summary::before { content:""; width:.55rem; height:.55rem; border-right:2px solid var(--muted); border-bottom:2px solid var(--muted); transform:rotate(-45deg); transition:transform .15s; margin-right:.2rem; }
+details.account[open] > summary::before { transform:rotate(45deg); }
+details.account > summary .title { font-weight:600; }
+details.account > summary .count { margin-left:auto; color:var(--muted); font-size:.9rem; }
+details.account[open] > summary { border-bottom:1px solid var(--line); }
+.account-body { padding:1rem 1.1rem; }
