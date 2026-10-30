@@ -9,6 +9,8 @@ use App\Models\TenantModel;
  * Graph with an app-only token (client credentials). Requires the application
  * permissions User.Read.All and Group.ReadBasic.All with admin consent; without
  * them the search methods return null and callers fall back to local data.
+ * After a 401/403 the cached token is discarded, so a newly granted consent
+ * takes effect within two minutes.
  */
 class DirectoryClient
 {
@@ -79,8 +81,10 @@ class DirectoryClient
             return json_decode($response->getBody(), true) ?: [];
         }
         if (in_array($response->getStatusCode(), [401, 403], true)) {
-            // Permission missing: do not retry for a while.
-            cache()->save($this->cacheKey($tenant, 'denied_' . $kind), true, 600);
+            // Permission missing: drop the token (it may predate a new admin
+            // consent) and pause briefly before trying again.
+            cache()->delete($this->cacheKey($tenant, 'apptoken'));
+            cache()->save($this->cacheKey($tenant, 'denied_' . $kind), true, 120);
         }
         log_message('info', 'Directory search ({kind}) failed for {slug}: HTTP {code}', [
             'kind' => $kind, 'slug' => $tenant['slug'], 'code' => $response->getStatusCode(),

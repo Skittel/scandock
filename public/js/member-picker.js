@@ -26,13 +26,28 @@
             form.submit();
         }
 
-        function render(results) {
+        var GUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+        var EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+        function note(text) {
+            var li = document.createElement('li');
+            li.className = 'note';
+            li.textContent = text;
+            list.appendChild(li);
+        }
+
+        function render(results, directory, query) {
+            // Offer the typed text itself when it is a valid UPN or group ID.
+            if (EMAIL.test(query) && !results.some(function (r) { return r.ref === query.toLowerCase(); })) {
+                results = results.concat([{ type: 'user', ref: query.toLowerCase(), label: query, detail: 'als Person übernehmen' }]);
+            } else if (GUID.test(query) && !results.some(function (r) { return r.ref === query.toLowerCase(); })) {
+                results = results.concat([{ type: 'group', ref: query.toLowerCase(), label: query, detail: 'als Gruppe übernehmen' }]);
+            }
             items = results;
             list.innerHTML = '';
             active = -1;
             if (!results.length) {
-                close();
-                return;
+                note('Keine Treffer.');
             }
             results.forEach(function (item, index) {
                 var li = document.createElement('li');
@@ -48,11 +63,14 @@
                 });
                 list.appendChild(li);
             });
+            if (directory === false) {
+                note('Verzeichnissuche nicht verfügbar (Anwendungsberechtigungen fehlen) – es werden nur bekannte Personen und Gruppen vorgeschlagen. Anmeldename oder Gruppen-ID direkt eingeben.');
+            }
             list.hidden = false;
         }
 
         function highlight(index) {
-            var nodes = list.querySelectorAll('li');
+            var nodes = list.querySelectorAll('li:not(.note)');
             nodes.forEach(function (node) { node.classList.remove('active'); });
             if (index >= 0 && index < nodes.length) {
                 nodes[index].classList.add('active');
@@ -75,7 +93,7 @@
                     .then(function (response) { return response.ok ? response.json() : { results: [] }; })
                     .then(function (data) {
                         if (input.value.trim() === query) {
-                            render(data.results || []);
+                            render(data.results || [], data.directory, query);
                         }
                     })
                     .catch(close);
