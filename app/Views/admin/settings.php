@@ -11,7 +11,7 @@
                 <ul><?php foreach ($userGroups as $g): ?><li><code><?= esc($g) ?></code></li><?php endforeach ?></ul>
             </details>
         <?php else: ?>
-            <p class="hint warn">Bei Ihrer letzten Anmeldung wurden keine Gruppen übermittelt. Prüfen Sie den Gruppenanspruch in der Tokenkonfiguration der App-Registrierung.</p>
+            <p class="hint warn">Bei Ihrer letzten Anmeldung wurden keine Gruppen übermittelt. Prüfen Sie in Entra unter <em>App-Registrierungen → ScanKai → Tokenkonfiguration</em> den Gruppenanspruch: Für Microsoft-365-Gruppen muss dort <strong>Alle Gruppen</strong> gewählt sein, <em>Sicherheitsgruppen</em> enthält nur Sicherheitsgruppen. Danach ab- und wieder anmelden.</p>
         <?php endif ?>
         <label class="check"><input type="checkbox" name="confirm_lockout" value="1"> Ich bin nicht Mitglied der Gruppe und verliere bewusst meine Admin-Rechte</label>
 

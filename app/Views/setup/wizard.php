@@ -30,7 +30,7 @@
     <h2>4. Gruppen im Token übermitteln</h2>
     <ol>
         <li><strong>Tokenkonfiguration → Gruppenanspruch hinzufügen</strong></li>
-        <li><strong>Sicherheitsgruppen</strong> auswählen, beim Token-Typ <em>ID</em> die Option <strong>Gruppen-ID</strong> belassen, speichern.</li>
+        <li><strong>Sicherheitsgruppen</strong> auswählen – oder <strong>Alle Gruppen</strong>, wenn Sie auch Microsoft-365-Gruppen (Teams) für Rechte verwenden möchten. Beim Token-Typ <em>ID</em> die Option <strong>Gruppen-ID</strong> belassen, speichern.</li>
     </ol>
     <p class="hint">Damit kann ScanKai Rechte über Entra-Gruppen vergeben (Admin-Gruppe, Zugriff auf FTP-Konten).</p>
 

@@ -37,7 +37,7 @@ class Settings extends BaseController
         // Prevent admins from locking themselves out.
         if ($groupId !== '' && ! in_array($groupId, UserModel::groupIds($this->currentUser()), true)
             && $this->request->getPost('confirm_lockout') !== '1') {
-            return redirect()->back()->withInput()->with('error', 'Sie sind nicht Mitglied dieser Gruppe und würden Ihre Admin-Rechte verlieren. Zum Bestätigen das Häkchen setzen.');
+            return redirect()->back()->withInput()->with('error', 'Laut Ihrer letzten Anmeldung sind Sie nicht Mitglied dieser Gruppe und würden Ihre Admin-Rechte verlieren. Gruppenmitgliedschaften übermittelt Microsoft nur bei der Anmeldung: Nach Änderungen bitte ab- und wieder anmelden. Zum Bestätigen das Häkchen setzen.');
         }
 
         model(TenantModel::class)->update($tenant['id'], [
