@@ -19,7 +19,9 @@ the scans. Scans are deleted automatically after a configurable number of days
 - All users are admins until an Entra admin group is configured
 - FTP accounts per copier: plain FTP, explicit FTPS (port 21) and implicit FTPS
   (port 990); upload-only (no listing, download, rename or delete); max. 50 MB
-  per file (larger files are rejected and reported); file names are
+  per file, enforced by the FTP server (aborted uploads are reported like other
+  rejected files; typical scans are 0.5–5 MB, ScanDock is not a file sharing
+  platform); file names are
   normalised (umlauts transliterated, e.g. ä → ae, ß → ss; only a-z, A-Z,
   0-9; max. 30 characters, longer names are cut to 26 characters plus a
   4-digit counter; extension max. 4 characters)

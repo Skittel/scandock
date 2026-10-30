@@ -1,0 +1,6 @@
+[Unit]
+Description=ScanDock: report uploads aborted by the FTP server
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/sbin/scandock-ftplog

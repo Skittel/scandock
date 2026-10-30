@@ -12,7 +12,7 @@ class ScanDock extends BaseConfig
     /**
      * Application version (major.minor.patch, each 0-999).
      */
-    public string $version = '0.0.28';
+    public string $version = '0.0.29';
 
     /**
      * Logo and homepage of the operator, shown in the header next to the
@@ -56,7 +56,8 @@ class ScanDock extends BaseConfig
 
     /**
      * Largest accepted scan. Bigger uploads are deleted and reported like
-     * files with a wrong extension. ProFTPD aborts uploads above 1 GB.
+     * files with a wrong extension. ProFTPD enforces the same limit (50 Mb)
+     * and aborted uploads are reported via scandock-ftplog.
      */
     public int $maxUploadBytes = 52428800;
 

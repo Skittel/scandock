@@ -1,0 +1,31 @@
+#!/bin/bash
+# ScanDock: reports uploads aborted by the FTP server (e.g. larger than the
+# 50 MB limit, response 552) to the application, so customers see them like
+# other rejected files. Reads new lines of the ProFTPD upload log:
+#   <epoch> <user> <response code> <bytes> <file name (may contain spaces)>
+# Run as root by scandock-ftplog.timer.
+set -u
+
+LOG=/var/log/proftpd/stor.log
+STATE=/var/lib/scandock/ftplog.state
+SPARK=(sudo -u www-data /usr/bin/php /var/www/scandock/spark)
+
+[ -f "$LOG" ] || exit 0
+mkdir -p "$(dirname "$STATE")"
+
+INODE=$(stat -c %i "$LOG")
+SIZE=$(stat -c %s "$LOG")
+read -r OLD_INODE OFFSET 2>/dev/null < "$STATE" || { OLD_INODE=""; OFFSET=0; }
+# Log rotated or truncated: start from the beginning.
+if [ "$INODE" != "$OLD_INODE" ] || [ "$SIZE" -lt "${OFFSET:-0}" ]; then
+    OFFSET=0
+fi
+
+tail -c +$((OFFSET + 1)) "$LOG" | head -c $((SIZE - OFFSET)) | while read -r _epoch user code bytes file; do
+    if [ "$code" = "552" ] && [ -n "$file" ]; then
+        "${SPARK[@]}" scans:ftp-rejected "$user" "$bytes" "$file" >/dev/null 2>&1 \
+            || logger -t scandock-ftplog "Could not record aborted upload of $user"
+    fi
+done
+
+echo "$INODE $SIZE" > "$STATE"
