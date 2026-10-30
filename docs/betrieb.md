@@ -65,3 +65,12 @@ Der Start-Link wird ungültig, sobald sich jemand darüber erfolgreich mit Entra
 | `sudo tail -12 /backup/$(sudo ls /backup \| grep log$ \| tail -1)` | Zusammenfassung der letzten Sicherung |
 
 **Wiederherstellen** (Kurzform): Archiv nach `/` entpacken, `mariadb < database.sql`, `mariadb < database-users.sql`, Dienste neu starten. Ohne die `.env` aus dem Archiv lassen sich die Scans nicht entschlüsseln. Archiv und Schlüssel gehören zusammen und müssen entsprechend geschützt werden.
+
+
+## Demo-Kunde und Screenshots
+
+| Befehl / Ort | Zweck |
+|---|---|
+| `https://demo.scandock.cloud` | Demo-Kunde „Muster GmbH“ mit erfundenen Daten. Nur von den Adressen in `scandock.demoAllowedIps` (`.env`) erreichbar, automatische Anmeldung als Demo-Admin, `?demo_user=<upn>` wechselt den Benutzer (`bernd.beispiel@…` = normaler Benutzer, `clara.chef@…` = Geschäftsführung). |
+| `scandock demo:seed` | Setzt den Demo-Kunden zurück und befüllt ihn neu. |
+| `resources/demo/` | Demo-PDFs (`mkdemo.py`), Demo-Logo, Screenshot-Skript `screenshots.py` (Playwright in `/opt/scandock-tools`). |
