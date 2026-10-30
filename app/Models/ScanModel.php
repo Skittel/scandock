@@ -11,7 +11,9 @@ class ScanModel extends Model
 {
     protected $table         = 'scans';
     protected $returnType    = 'array';
-    protected $useTimestamps = true;
+    protected $useTimestamps  = true;
+    protected $useSoftDeletes = true;
+    protected $deletedField   = 'deleted_at';
     protected $updatedField  = '';
     protected $beforeInsert  = ['assignPublicId'];
     protected $allowedFields = ['public_id', 

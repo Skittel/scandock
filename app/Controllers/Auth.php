@@ -85,7 +85,7 @@ class Auth extends BaseController
             strtolower((string) $claims['oid']),
             (string) ($claims['preferred_username'] ?? $claims['email'] ?? $claims['upn'] ?? ''),
             (string) ($claims['name'] ?? $claims['preferred_username'] ?? ''),
-            $groupIds ?? []
+            $groupIds
         );
 
         // A successful sign-in through the start link completes the setup and invalidates the link.

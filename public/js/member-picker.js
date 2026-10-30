@@ -6,6 +6,7 @@
         var input = form.querySelector('input[name="member_ref"]');
         var type = form.querySelector('input[name="member_type"]');
         var label = form.querySelector('input[name="label"]');
+        var oid = form.querySelector('input[name="member_oid"]');
         var list = form.querySelector('.suggestions');
         var url = form.getAttribute('data-search-url');
         var timer = null;
@@ -22,6 +23,7 @@
             input.value = item.ref;
             type.value = item.type;
             label.value = item.label;
+            oid.value = item.oid || '';
             close();
             form.submit();
         }
@@ -82,6 +84,7 @@
             // Typing manually invalidates a previous selection.
             type.value = '';
             label.value = '';
+            oid.value = '';
             clearTimeout(timer);
             var query = input.value.trim();
             if (query.length < 2) {

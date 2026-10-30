@@ -30,6 +30,7 @@ class DirectoryClient
 
         return array_map(static fn (array $u) => [
             'type'   => 'user',
+            'oid'    => strtolower($u['id'] ?? ''),
             'ref'    => strtolower($u['userPrincipalName'] ?? ''),
             'label'  => (string) ($u['displayName'] ?? $u['userPrincipalName'] ?? ''),
             'detail' => strtolower($u['userPrincipalName'] ?? ''),

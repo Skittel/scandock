@@ -12,7 +12,7 @@ class ScanDock extends BaseConfig
     /**
      * Application version (major.minor.patch, each 0-999).
      */
-    public string $version = '0.0.24';
+    public string $version = '0.0.25';
 
     /**
      * Logo and homepage of the operator, shown in the header next to the
@@ -53,6 +53,28 @@ class ScanDock extends BaseConfig
      * Directory where ingested scans and their thumbnails are stored.
      */
     public string $storagePath = '/srv/scandock/storage';
+
+    /**
+     * Largest accepted scan. Bigger uploads are deleted and reported like
+     * files with a wrong extension. ProFTPD aborts uploads above 1 GB.
+     */
+    public int $maxUploadBytes = 52428800;
+
+    /**
+     * Below this free space (bytes) on the scan storage the FTP server is
+     * stopped and users see a warning; it restarts at threshold + 1 GB.
+     */
+    public int $minFreeBytes = 10737418240;
+
+    /**
+     * File written by the disk guard while the FTP server is stopped.
+     */
+    public string $ftpBlockedFile = '/run/scandock/ftp-blocked';
+
+    /**
+     * Group memberships older than this (seconds) are not trusted any more.
+     */
+    public int $groupsMaxAge = 3600;
 
     /**
      * Default retention for new tenants in days.

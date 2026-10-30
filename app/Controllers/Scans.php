@@ -60,6 +60,7 @@ class Scans extends BaseController
         $latest     = $accountIds === [] ? null : model(ScanModel::class)
             ->select('COUNT(*) AS n, MAX(id) AS max_id')
             ->where('tenant_id', $tenant['id'])->whereIn('ftp_account_id', $accountIds)
+            ->where('deleted_at', null)
             ->get()->getRowArray();
 
         $pendingKey = array_map(static fn ($files) => array_map(static fn ($f) => $f['name'] . ':' . $f['state'], $files), $pending);

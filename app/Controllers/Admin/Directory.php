@@ -61,7 +61,7 @@ class Directory extends BaseController
             ->findAll(10);
 
         return array_merge(
-            array_map(static fn ($u) => ['type' => 'user', 'ref' => $u['upn'], 'label' => $u['name'], 'detail' => $u['upn']], $users),
+            array_map(static fn ($u) => ['type' => 'user', 'oid' => $u['entra_oid'], 'ref' => $u['upn'], 'label' => $u['name'], 'detail' => $u['upn']], $users),
             array_map(static fn ($g) => ['type' => 'group', 'ref' => $g['member_ref'], 'label' => $g['label'] ?: $g['member_ref'], 'detail' => 'Gruppe'], $groups)
         );
     }

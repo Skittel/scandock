@@ -54,6 +54,15 @@
     <?php foreach (['notice' => 'ok', 'warning' => 'warn', 'error' => 'err'] as $key => $cls): ?>
         <?php if ($msg = session()->getFlashdata($key)): ?><div class="flash <?= $cls ?>"><?= esc($msg) ?></div><?php endif ?>
     <?php endforeach ?>
+    <?php if (! empty($ftpBlocked)): ?>
+        <div class="flash err"><strong>Der Empfang von Scans ist gesperrt.</strong> Auf dem Server ist zu wenig Speicherplatz frei, der FTP-Server wurde deshalb angehalten<?= isset($ftpBlocked['since']) ? ' (seit ' . esc(date('d.m.Y H:i', strtotime($ftpBlocked['since']))) . ' Uhr)' : '' ?>. Kopierer können zurzeit keine Scans senden. Bereits empfangene Scans sind weiterhin verfügbar. Sobald wieder genug Speicherplatz frei ist, wird der Empfang automatisch freigegeben.</div>
+    <?php endif ?>
+    <?php if (! empty($groupsStale)): ?>
+        <div class="flash warn">Ihre Gruppenmitgliedschaften konnten nicht bei Microsoft aktualisiert werden. Rechte über Gruppen sind deshalb vorübergehend nicht aktiv. <a href="/auth/login">Neu anmelden</a></div>
+    <?php endif ?>
+    <?php if (! empty($everyoneIsAdmin)): ?>
+        <div class="flash warn">Es ist keine Admin-Gruppe festgelegt: <strong>Jeder angemeldete Benutzer hat Admin-Rechte.</strong> <a href="/admin/settings">Admin-Gruppe festlegen</a></div>
+    <?php endif ?>
     <?php if (isset($secretDaysLeft)): ?>
         <?php if ($secretDaysLeft < 0): ?>
             <div class="flash err">Der geheime Clientschlüssel der Entra-App ist am <?= esc(date('d.m.Y', strtotime($tenant['entra_secret_expires_at']))) ?> abgelaufen. Neue Anmeldungen sind nicht mehr möglich. <a href="/admin/settings#secret">Jetzt erneuern</a></div>

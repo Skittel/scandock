@@ -1,3 +1,4 @@
-# ScanDock: inspect uploads and write temporary decompressed copies
+# ScanDock: inspect uploads; the decompressed copy lives in a private RAM directory
 /srv/scandock/incoming/** r,
-owner /var/www/scandock/writable/cache/pdfscan* rw,
+owner /dev/shm/scandock-*/ rw,
+owner /dev/shm/scandock-*/** rw,

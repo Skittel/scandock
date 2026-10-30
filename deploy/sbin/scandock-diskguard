@@ -1,0 +1,35 @@
+#!/bin/bash
+# ScanDock disk guard (root, systemd timer every minute).
+#
+# Below MIN_FREE_GB free space on the scan storage the FTP server is stopped
+# and a state file tells the web application to show a warning to every
+# user. Receiving is released again at MIN_FREE_GB + 1 GB (hysteresis).
+# MIN_FREE_GB can be overridden in the environment (testing).
+set -u
+
+STORAGE=/srv/scandock
+STATE_DIR=/run/scandock
+STATE="$STATE_DIR/ftp-blocked"
+MIN_FREE_GB=${MIN_FREE_GB:-10}
+RELEASE_GB=$((MIN_FREE_GB + 1))
+SPARK="sudo -u www-data /usr/bin/php /var/www/scandock/spark"
+
+FREE_BYTES=$(df --output=avail -B1 "$STORAGE" | tail -1 | tr -d ' ')
+FREE_GB=$(awk "BEGIN {printf \"%.1f\", $FREE_BYTES / 1073741824}")
+mkdir -p "$STATE_DIR"; chmod 755 "$STATE_DIR"
+
+if [ "$FREE_BYTES" -lt $((MIN_FREE_GB * 1073741824)) ]; then
+    if [ ! -f "$STATE" ]; then
+        printf '{"since":"%s","free_gb":%s}\n' "$(date -Iseconds)" "$FREE_GB" > "$STATE"
+        chmod 644 "$STATE"
+        logger -t scandock-diskguard -p user.crit "Only ${FREE_GB} GB free on $STORAGE (< ${MIN_FREE_GB} GB): stopping FTP server"
+        $SPARK system:receive-block on "$FREE_GB" >/dev/null 2>&1
+    fi
+    # Also after a reboot or a manual start: keep the FTP server stopped.
+    systemctl is-active -q proftpd && systemctl stop proftpd
+elif [ -f "$STATE" ] && [ "$FREE_BYTES" -ge $((RELEASE_GB * 1073741824)) ]; then
+    systemctl start proftpd && rm -f "$STATE"
+    logger -t scandock-diskguard -p user.notice "${FREE_GB} GB free on $STORAGE again: FTP server started"
+    $SPARK system:receive-block off "$FREE_GB" >/dev/null 2>&1
+fi
+exit 0

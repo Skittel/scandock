@@ -1,16 +1,15 @@
 {
-    "name": "codeigniter4/appstarter",
-    "description": "CodeIgniter4 starter app",
-    "license": "MIT",
+    "name": "skittel/scandock",
+    "description": "ScanDock – multi-tenant scan-to-cloud gateway for copiers (FTP/FTPS upload, Microsoft Entra sign-in)",
+    "license": "LicenseRef-ScanDock-MIT-Attribution",
     "type": "project",
-    "homepage": "https://codeigniter.com",
+    "homepage": "https://github.com/Skittel/scandock",
     "support": {
-        "forum": "https://forum.codeigniter.com/",
-        "source": "https://github.com/codeigniter4/CodeIgniter4",
-        "slack": "https://codeigniterchat.slack.com"
+        "source": "https://github.com/Skittel/scandock",
+        "issues": "https://github.com/Skittel/scandock/issues"
     },
     "require": {
-        "php": "^8.2",
+        "php": "^8.4",
         "codeigniter4/framework": "^4.7",
         "firebase/php-jwt": "^7.2"
     },

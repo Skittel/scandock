@@ -109,7 +109,9 @@ class FileInspector
         }
 
         // 2. Decompressed stream contents: HTML hidden inside compressed streams.
-        $tmp = tempnam(WRITEPATH . 'cache', 'pdfscan');
+        // Decompressed copy only in RAM, never on disk.
+        $work = FileCrypto::ramDirectory();
+        $tmp  = $work . '/pdfscan.qdf';
         exec(sprintf(
             'timeout 60 qpdf --qdf --object-streams=disable --decode-level=generalized %s %s >/dev/null 2>&1',
             escapeshellarg($path),
@@ -123,7 +125,7 @@ class FileInspector
             }
             $markup = $this->scanChunks($tmp, static fn (string $chunk) => preg_match(self::MARKUP, $chunk) === 1 ? true : null);
         } finally {
-            @unlink($tmp);
+            FileCrypto::removeDirectory($work);
         }
 
         return $markup === true

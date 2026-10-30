@@ -61,11 +61,29 @@ abstract class BaseController extends Controller
         $tenant  = $this->tenant();
         $isAdmin = $this->isAdmin();
 
+        $user = $this->currentUser();
+
         return view($view, $data + [
             'tenant'          => $tenant,
-            'user'            => $this->currentUser(),
+            'user'            => $user,
             'isAdmin'         => $isAdmin,
             'secretDaysLeft'  => $isAdmin && $tenant !== null ? TenantModel::secretDaysLeft($tenant) : null,
+            'ftpBlocked'      => self::ftpBlocked(),
+            'groupsStale'     => $user !== null && UserModel::groupsStale($user),
+            'everyoneIsAdmin' => $isAdmin && $tenant !== null && empty($tenant['admin_group_id']),
         ]);
+    }
+
+    /**
+     * Details of the receive block set by the disk guard, or null.
+     */
+    protected static function ftpBlocked(): ?array
+    {
+        $file = config('ScanDock')->ftpBlockedFile;
+        if (! is_file($file)) {
+            return null;
+        }
+
+        return json_decode((string) file_get_contents($file), true) ?: ['since' => date('c', filemtime($file))];
     }
 }

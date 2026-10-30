@@ -41,6 +41,8 @@ class AuditLog
         'tenant.renamed'         => ['system', 'Firmenname geändert: „{old}“ → „{new}“'],
         'tenant.status'          => ['system', 'Zugang {status}'],
         'tenant.link'            => ['system', 'Neuer Start-Link erzeugt'],
+        'system.receive_blocked' => ['system', 'Empfang von Scans gesperrt: nur noch {free} GB Speicherplatz frei, FTP-Server angehalten'],
+        'system.receive_released'=> ['system', 'Empfang von Scans wieder freigegeben ({free} GB Speicherplatz frei)'],
     ];
 
     public const CATEGORIES = [

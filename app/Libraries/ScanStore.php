@@ -181,7 +181,7 @@ class ScanStore
                         $count++;
                     }
                 } catch (\Throwable $e) {
-                    log_message('error', 'Ingest of {file} failed: {msg}', ['file' => $path, 'msg' => $e->getMessage()]);
+                    log_message('error', 'Ingest of {name} failed: {msg}', ['name' => $path, 'msg' => $e->getMessage()]);
                 }
             }
         }
@@ -234,6 +234,12 @@ class ScanStore
             ->where('created_at <', date('Y-m-d H:i:s', strtotime('-' . $this->config->auditRetentionDays . ' days')))
             ->delete();
 
+        // Retry scans whose files could not be removed before.
+        foreach (model(ScanModel::class)->onlyDeleted()->findAll() as $scan) {
+            $this->delete($scan);
+        }
+        $this->removeOrphans();
+
         foreach (model(TenantModel::class)->findAll() as $tenant) {
             $cutoff = date('Y-m-d H:i:s', strtotime('-' . max(1, (int) $tenant['retention_days']) . ' days'));
             $scans  = model(ScanModel::class)->where('tenant_id', $tenant['id'])->where('received_at <', $cutoff)->findAll();
@@ -250,6 +256,37 @@ class ScanStore
      * Deletes a scan and records it in the admin journal ($action is
      * "scan.deleted" for users or "scan.expired" for the retention purge).
      */
+    /**
+     * Removes files in the scan storage that belong to no scan record
+     * (e.g. left over after a crash). Files younger than one hour are kept,
+     * they may belong to an import that is still running.
+     *
+     * @return int number of removed files
+     */
+    public function removeOrphans(): int
+    {
+        $known = array_flip(array_column(
+            model(ScanModel::class)->withDeleted()->select('stored_name')->findAll(),
+            'stored_name'
+        ));
+        $removed = 0;
+        foreach (glob(rtrim($this->config->storagePath, '/') . '/*/*') ?: [] as $file) {
+            if (! is_file($file) || filemtime($file) > time() - 3600) {
+                continue;
+            }
+            // <uuid>.<ext>[.enc], <uuid>.thumb.png[.enc], <uuid>.view.pdf[.enc], *.part
+            if (preg_match('/^([0-9a-f-]{36})\./', basename($file), $m) !== 1 || isset($known[$m[1]])) {
+                continue;
+            }
+            if (@unlink($file)) {
+                $removed++;
+                log_message('warning', 'Removed orphaned file {name}', ['name' => $file]);
+            }
+        }
+
+        return $removed;
+    }
+
     public function deleteLogged(array $scan, string $action = 'scan.deleted', ?string $actor = null): void
     {
         $this->delete($scan);
@@ -259,25 +296,50 @@ class ScanStore
         ], $actor);
     }
 
-    public function delete(array $scan): void
+    /**
+     * Removes the files of a scan and then its record. If a file cannot be
+     * removed, the scan is only marked as deleted (hidden for users) and the
+     * daily purge tries again.
+     *
+     * @return bool true if all files are gone
+     */
+    public function delete(array $scan): bool
     {
-        // Remove plain and encrypted variants alike.
+        $remaining = [];
         foreach ([0, 1] as $encrypted) {
             $variant = ['encrypted' => $encrypted] + $scan;
             $variant['encrypted'] = $encrypted;
-            @unlink($this->filePath($variant));
-            @unlink($this->thumbnailPath($variant));
-            @unlink($this->tiffViewPath($variant));
+            foreach ([$this->filePath($variant), $this->thumbnailPath($variant), $this->tiffViewPath($variant)] as $file) {
+                if (is_file($file) && ! @unlink($file) && is_file($file)) {
+                    $remaining[] = $file;
+                }
+            }
         }
-        model(ScanModel::class)->delete($scan['id']);
+
+        if ($remaining !== []) {
+            log_message('error', 'Could not delete files of scan {id}: {files}', ['id' => $scan['id'], 'files' => implode(', ', $remaining)]);
+            model(ScanModel::class)->delete($scan['id']);
+
+            return false;
+        }
+        model(ScanModel::class)->delete($scan['id'], true);
+
+        return true;
     }
 
     private function ingestFile(array $account, string $path, string $name): bool
     {
         $type   = FileInspector::typeForName($name);
-        $reason = $type === null
-            ? sprintf('Dateityp „.%s“ ist nicht erlaubt (erlaubt: PDF, JPG, PNG, TIFF).', mb_substr(pathinfo($name, PATHINFO_EXTENSION) ?: '?', 0, 10))
-            : (new FileInspector())->inspect($path, $type);
+        $size   = (int) filesize($path);
+        $reason = match (true) {
+            $type === null => sprintf('Dateityp „.%s“ ist nicht erlaubt (erlaubt: PDF, JPG, PNG, TIFF).', mb_substr(pathinfo($name, PATHINFO_EXTENSION) ?: '?', 0, 10)),
+            $size > $this->config->maxUploadBytes => sprintf(
+                'Die Datei ist %s MB groß, erlaubt sind höchstens %d MB.',
+                number_format($size / 1048576, 1, ',', '.'),
+                intdiv($this->config->maxUploadBytes, 1048576)
+            ),
+            default => (new FileInspector())->inspect($path, $type),
+        };
 
         if ($reason !== null) {
             $this->reject($account, $path, $name, $reason);
@@ -324,8 +386,17 @@ class ScanStore
                 FileCrypto::encryptFile($plain, $cipher, $key);
                 chmod($cipher, 0640);
             }
+
+            // Verify the stored original before anything is deleted.
+            if (! hash_equals($scan['sha256'], FileCrypto::plaintextSha256($this->filePath($scan), $key))) {
+                throw new \RuntimeException('Checksum mismatch after encryption.');
+            }
+            if (model(ScanModel::class)->insert($scan) === false) {
+                throw new \RuntimeException('Database insert failed.');
+            }
         } catch (\Throwable $e) {
-            log_message('error', 'Could not store upload {file}: {msg}', ['file' => $path, 'msg' => $e->getMessage()]);
+            // The upload stays in the incoming directory and is retried later.
+            log_message('error', 'Could not store upload {name}: {msg}', ['name' => $path, 'msg' => $e->getMessage()]);
             foreach ($files ?? [] as [, $cipher]) {
                 @unlink($cipher);
             }
@@ -335,7 +406,6 @@ class ScanStore
             FileCrypto::removeDirectory($work);
         }
 
-        model(ScanModel::class)->insert($scan);
         unlink($path);
         service('audit')->record((int) $account['tenant_id'], 'scan.received', [
             'file'    => $scan['original_name'],
@@ -358,7 +428,7 @@ class ScanStore
             'size'           => (int) @filesize($path),
             'reason'         => $reason,
         ]);
-        log_message('warning', 'Rejected upload {file} of FTP account {id}: {reason}', ['file' => $name, 'id' => $account['id'], 'reason' => $reason]);
+        log_message('warning', 'Rejected upload {name} of FTP account {id}: {reason}', ['name' => $name, 'id' => $account['id'], 'reason' => $reason]);
         service('audit')->record((int) $account['tenant_id'], 'scan.rejected', [
             'file'    => mb_substr($name, 0, 255),
             'account' => $account['label'],
@@ -409,7 +479,7 @@ class ScanStore
         }
         if ($code !== 0) {
             @unlink($pdf);
-            log_message('warning', 'Could not create PDF view of {file}', ['file' => $tiff]);
+            log_message('warning', 'Could not create PDF view of {name}', ['name' => $tiff]);
 
             return false;
         }

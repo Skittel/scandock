@@ -1,0 +1,6 @@
+[Unit]
+Description=ScanDock: stop receiving scans when disk space is low
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/sbin/scandock-diskguard

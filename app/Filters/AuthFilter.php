@@ -28,7 +28,16 @@ class AuthFilter implements FilterInterface
 
             return redirect()->to('/auth/login');
         }
-        service('groupSync')->refreshIfStale($tenant, $user);
+        $user = service('groupSync')->refreshIfStale($tenant, $user);
+
+        // Groups could not be refreshed and are outdated: renew them with a
+        // silent sign-in (normal page views only, at most every 10 minutes).
+        if (UserModel::groupsStale($user) && $request->getMethod() === 'GET' && ! $request->isAJAX()
+            && (int) $session->get('silent_reauth_at') < time() - 600) {
+            $session->set(['silent_reauth_at' => time(), 'login_return' => '/' . ltrim($request->getUri()->getPath(), '/')]);
+
+            return redirect()->to('/auth/login?silent=1');
+        }
 
         return null;
     }

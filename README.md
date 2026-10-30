@@ -18,7 +18,8 @@ the scans. Scans are deleted automatically after a configurable number of days
 - Sign-in with Microsoft Entra ID (OpenID Connect, authorization code + PKCE)
 - All users are admins until an Entra admin group is configured
 - FTP accounts per copier: plain FTP, explicit FTPS (port 21) and implicit FTPS
-  (port 990); upload-only (no listing, download, rename or delete)
+  (port 990); upload-only (no listing, download, rename or delete); max. 50 MB
+  per file (larger files are rejected and reported)
 - Accepted files: PDF, JPEG, PNG, TIFF. Every upload is inspected: content
   must match the extension, no HTML/script code (also inside compressed PDF
   streams), no active PDF content (JavaScript, embedded files, launch
@@ -34,6 +35,8 @@ the scans. Scans are deleted automatically after a configurable number of days
   secretstream, one key per tenant, keys wrapped with the app key); plaintext
   intermediates only in RAM (/dev/shm)
 - Random public IDs in all URLs (no database IDs)
+- Disk guard: below 10 GB free space the FTP server is stopped and all users
+  see a warning; receiving resumes automatically at 11 GB
 - Admin journal per tenant: configuration and FTP account changes, received,
   rejected and deleted scans, operator actions (no sign-ins/downloads)
 - PDF thumbnails, inline preview, download, delete; list view with multi-select

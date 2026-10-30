@@ -126,6 +126,7 @@ class FtpAccounts extends BaseController
         $type  = (string) $this->request->getPost('member_type');
         $ref   = strtolower(trim((string) $this->request->getPost('member_ref')));
         $label = trim((string) $this->request->getPost('label'));
+        $oid   = strtolower(trim((string) $this->request->getPost('member_oid')));
 
         // Free text without a selection from the suggestions: infer the type.
         if ($type === '') {
@@ -145,10 +146,17 @@ class FtpAccounts extends BaseController
         $members = model(FtpAccountMemberModel::class);
         $exists  = $members->where(['ftp_account_id' => $account['id'], 'member_type' => $type, 'member_ref' => $ref])->countAllResults() > 0;
         if (! $exists) {
+            // Persons are matched by their immutable Entra object ID: taken from
+            // the directory suggestion, a known user, or bound at first sign-in.
+            if ($type === 'user' && preg_match(self::GUID, $oid) !== 1) {
+                $known = model(\App\Models\UserModel::class)->where('tenant_id', $account['tenant_id'])->where('upn', $ref)->first();
+                $oid   = $known['entra_oid'] ?? '';
+            }
             $members->insert([
                 'ftp_account_id' => $account['id'],
                 'member_type'    => $type,
                 'member_ref'     => $ref,
+                'member_oid'     => $type === 'user' && preg_match(self::GUID, $oid) === 1 ? $oid : null,
                 'label'          => mb_substr($label !== '' ? $label : $ref, 0, 190),
             ]);
             service('audit')->record((int) $account['tenant_id'], 'ftp.member_added', [

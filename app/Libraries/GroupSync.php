@@ -36,12 +36,12 @@ class GroupSync
                 $groups = service('entra')->fetchGroupIds($token);
             }
         }
-        if ($groups === null || $groups === UserModel::groupIds($user)) {
+        if ($groups === null) {
+            // Not reachable: keep the memberships until they are too old.
             return $user;
         }
 
         model(UserModel::class)->updateGroups((int) $user['id'], $groups);
-        log_message('info', 'Group memberships of user {id} refreshed', ['id' => $user['id']]);
 
         return model(UserModel::class)->find($user['id']);
     }

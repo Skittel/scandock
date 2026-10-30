@@ -67,6 +67,7 @@
         <h3>Person oder Gruppe hinzufügen</h3>
         <?= form_open('admin/ftp/' . $account['public_id'] . '/members', ['class' => 'form row member-picker', 'data-search-url' => site_url('admin/directory'), 'autocomplete' => 'off']) ?>
             <input type="hidden" name="member_type" value="">
+            <input type="hidden" name="member_oid" value="">
             <input type="hidden" name="label" value="">
             <div class="picker">
                 <input name="member_ref" required placeholder="Name, Anmeldename oder Gruppe suchen …" aria-autocomplete="list">

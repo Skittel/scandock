@@ -51,7 +51,7 @@ class TenantBranding
         if (! is_dir($dir)) {
             mkdir($dir, 0750, true);
         }
-        $name = 'logo-' . time() . '.' . self::TYPES[$type];
+        $name = 'logo-' . bin2hex(random_bytes(8)) . '.' . self::TYPES[$type];
         file_put_contents($dir . '/' . $name, $content);
 
         $this->deleteFile($tenant);

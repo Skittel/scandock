@@ -42,7 +42,13 @@ class ScanAccess
                 ->orWhereIn('id', static function ($builder) use ($user, $groups) {
                     $builder->select('ftp_account_id')->from('ftp_account_members')
                         ->groupStart()
-                            ->where('member_type', 'user')->where('member_ref', strtolower($user['upn']))
+                            ->where('member_type', 'user')
+                            ->groupStart()
+                                ->where('member_oid', strtolower($user['entra_oid']))
+                                ->orGroupStart()
+                                    ->where('member_oid', null)->where('member_ref', strtolower($user['upn']))
+                                ->groupEnd()
+                            ->groupEnd()
                         ->groupEnd();
                     if ($groups !== []) {
                         $builder->orGroupStart()

@@ -87,6 +87,8 @@ PATHS=(
     etc/systemd/system/scandock-purge.service
     etc/systemd/system/scandock-purge.timer
     etc/systemd/system/scandock-upload-watch.service
+    etc/systemd/system/scandock-diskguard.service
+    etc/systemd/system/scandock-diskguard.timer
     etc/sudoers.d/scandock
     etc/fail2ban/jail.d/scandock.conf
     etc/apparmor.d/local/proftpd
@@ -98,6 +100,7 @@ PATHS=(
     usr/local/sbin/scandock-site
     usr/local/sbin/scandock-upload-watch
     usr/local/sbin/scandock-backup
+    usr/local/sbin/scandock-diskguard
     usr/local/bin/scandock
     root/.secrets
     root/scandock-ki-overview

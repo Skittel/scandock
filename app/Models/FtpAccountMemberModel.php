@@ -14,7 +14,7 @@ class FtpAccountMemberModel extends Model
     protected $useTimestamps = true;
     protected $updatedField  = '';
     protected $beforeInsert  = ['assignPublicId'];
-    protected $allowedFields = ['public_id', 'ftp_account_id', 'member_type', 'member_ref', 'label'];
+    protected $allowedFields = ['public_id', 'ftp_account_id', 'member_type', 'member_ref', 'member_oid', 'label'];
 
     public function forAccount(int $accountId): array
     {
