@@ -99,7 +99,7 @@ class CreateInitialSchema extends Migration
             "CREATE OR REPLACE VIEW ftp_users AS
              SELECT a.username AS userid,
                     a.password_hash AS passwd,
-                    CONCAT('/srv/scankai/incoming/', a.id) AS homedir
+                    CONCAT('/srv/scandock/incoming/', a.id) AS homedir
              FROM ftp_accounts a
              JOIN tenants t ON t.id = a.tenant_id
              WHERE a.active = 1 AND t.status = 'active'"

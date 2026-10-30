@@ -1,8 +1,8 @@
-# ScanKai additions
-/etc/letsencrypt/live/ftp.scankai.site/* r,
-/etc/letsencrypt/archive/ftp.scankai.site/* r,
-/srv/scankai/incoming/ r,
-/srv/scankai/incoming/** rw,
+# ScanDock additions
+/etc/letsencrypt/live/ftp.scandock.cloud/* r,
+/etc/letsencrypt/archive/ftp.scandock.cloud/* r,
+/srv/scandock/incoming/ r,
+/srv/scandock/incoming/** rw,
 /etc/mysql/** r,
 /usr/lib/proftpd/*.so mr,
 /proc/sys/kernel/random/uuid r,

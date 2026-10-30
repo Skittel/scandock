@@ -120,7 +120,7 @@ class Auth extends BaseController
 
         return view('message', [
             'title'   => 'Abgemeldet',
-            'message' => 'Sie wurden von ScanKai abgemeldet.',
+            'message' => 'Sie wurden von ScanDock abgemeldet.',
             'link'    => ['url' => site_url('auth/login'), 'label' => 'Erneut anmelden'],
         ]);
     }

@@ -1,0 +1,3 @@
+#!/bin/bash
+# ScanDock CLI: runs spark commands as www-data. Example: scandock tenant:create beecken
+exec sudo -u www-data php /var/www/scandock/spark "$@"

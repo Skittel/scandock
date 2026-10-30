@@ -1,5 +1,5 @@
 [Unit]
-Description=ScanKai: delete expired scans daily
+Description=ScanDock: delete expired scans daily
 
 [Timer]
 OnCalendar=*-*-* 03:15:00

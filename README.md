@@ -1,10 +1,10 @@
-# ScanKai
+# ScanDock
 
 Scan-to-cloud gateway for copiers and multifunction printers.
 
 Many copiers cannot scan to SharePoint or to SMB shares in the cloud, and a lot
-of them only speak plain FTP. ScanKai gives every customer a web portal on its
-own subdomain (`<slug>.scankai.site`). Copiers upload PDFs via FTP or FTPS,
+of them only speak plain FTP. ScanDock gives every customer a web portal on its
+own subdomain (`<slug>.scandock.cloud`). Copiers upload PDFs via FTP or FTPS,
 users sign in with their Microsoft 365 account (Entra ID), preview and download
 the scans. Scans are deleted automatically after a configurable number of days
 (default 30) or manually.
@@ -47,30 +47,30 @@ poppler-utils · certbot
 ## Operations
 
 ```bash
-scankai tenant:create <slug> --name "Customer"   # vhost + certificate + start link
-scankai tenant:link <slug>                       # show current start link
-scankai tenant:link-renew <slug>                 # new start link (tenant stays active)
-scankai tenant:list
-scankai tenant:rename <slug> "Display name"
-scankai tenant:status <slug> disable|enable
-scankai scans:ingest                             # run by the upload watcher (inotify) right
+scandock tenant:create <slug> --name "Customer"   # vhost + certificate + start link
+scandock tenant:link <slug>                       # show current start link
+scandock tenant:link-renew <slug>                 # new start link (tenant stays active)
+scandock tenant:list
+scandock tenant:rename <slug> "Display name"
+scandock tenant:status <slug> disable|enable
+scandock scans:ingest                             # run by the upload watcher (inotify) right
                                                  # after each upload, timer every 20 s as fallback
-scankai scans:purge                              # run by systemd timer daily
-scankai scans:encrypt                            # encrypt scans stored before 0.0.18
+scandock scans:purge                              # run by systemd timer daily
+scandock scans:encrypt                            # encrypt scans stored before 0.0.18
 ```
 
 The static landing page for the base domain and `www` lives in [`landing/`](landing/).
 The logo sources are in [`resources/logo/`](resources/logo/).
 
-`scankai` is a wrapper that runs `php spark` as `www-data`. Server configuration
+`scandock` is a wrapper that runs `php spark` as `www-data`. Server configuration
 (ProFTPD, AppArmor, systemd units, vhost helper, fail2ban) lives in
 [`deploy/`](deploy/).
 
 ## Versioning
 
-`major.minor.patch`, each part 0–999. Current version: see `app/Config/ScanKai.php`.
+`major.minor.patch`, each part 0–999. Current version: see `app/Config/ScanDock.php`.
 
 ## License
 
-MIT with attribution – free for private and commercial use. If you use ScanKai,
-reference https://github.com/Skittel/scankai in your README. See [LICENSE](LICENSE).
+MIT with attribution – free for private and commercial use. If you use ScanDock,
+reference https://github.com/Skittel/scandock in your README. See [LICENSE](LICENSE).

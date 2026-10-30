@@ -1,8 +1,0 @@
-[Unit]
-Description=ScanKai: delete expired scans
-
-[Service]
-Type=oneshot
-User=www-data
-Group=www-data
-ExecStart=/usr/bin/php /var/www/scankai/spark scans:purge

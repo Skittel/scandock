@@ -1,4 +1,4 @@
-"""Builds the ScanKai logo files from the original design (logo design by the
+"""Builds the ScanDock logo files from the original design (logo design by the
 project owner). The wordmark is converted to outlines with Liberation Sans Bold
 (metric-compatible with Arial, SIL OFL) so it renders identically everywhere."""
 from fontTools.ttLib import TTFont
@@ -27,7 +27,7 @@ def outline(text, x):
     return ' '.join(cmds), x, bounds
 
 scan, x, _ = outline('Scan', X0)
-kai, x_end, kb = outline('Kai', x)
+dock, x_end, kb = outline('Dock', x)
 right = round(kb[2] + 20)
 
 WAVE_A = 'C75 {a} 115 {b} 180 {m} S285 {c} 350 {m}'
@@ -69,19 +69,19 @@ def icon(animated):
 {wave_el(299, "#FFFFFF", animated)}
 {wave_el(305, "url(#sk-blue)", animated)}'''
 
-full = f'''<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 10 {right} 330" role="img" aria-label="ScanKai Logo">
-  <title>ScanKai</title>
+full = f'''<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 10 {right} 330" role="img" aria-label="ScanDock Logo">
+  <title>ScanDock</title>
 {icon(True)}
   <path fill="#082B55" d="{scan}"/>
-  <path fill="url(#sk-blue)" d="{kai}"/>
+  <path fill="url(#sk-blue)" d="{dock}"/>
 </svg>
 '''
-square = lambda animated: f'''<svg xmlns="http://www.w3.org/2000/svg" viewBox="5 2 350 350" role="img" aria-label="ScanKai">
-  <title>ScanKai</title>
+square = lambda animated: f'''<svg xmlns="http://www.w3.org/2000/svg" viewBox="5 2 350 350" role="img" aria-label="ScanDock">
+  <title>ScanDock</title>
 {icon(animated)}
 </svg>
 '''
-open('logo-scankai.svg', 'w').write(full)
-open('logo-scankai-icon.svg', 'w').write(square(True))
+open('logo-scandock.svg', 'w').write(full)
+open('logo-scandock-icon.svg', 'w').write(square(True))
 open('favicon.svg', 'w').write(square(False))
 print('viewBox width', right)

@@ -1,10 +1,10 @@
 #!/bin/bash
-# ScanKai: starts the import as soon as an FTP upload is complete.
+# ScanDock: starts the import as soon as an FTP upload is complete.
 # ProFTPD writes ".in.<name>." and renames it when done (HiddenStores), so a
 # MOVED_TO event of a non-hidden file means the upload is finished.
 set -u
-INCOMING=/srv/scankai/incoming
-SPARK=/var/www/scankai/spark
+INCOMING=/srv/scandock/incoming
+SPARK=/var/www/scandock/spark
 
 inotifywait -m -r -q -e moved_to -e close_write --format '%f' "$INCOMING" | while read -r name; do
     case "$name" in

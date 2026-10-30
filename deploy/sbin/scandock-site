@@ -1,25 +1,25 @@
 #!/bin/bash
-# ScanKai: manage Apache vhost + Let's Encrypt certificate for one hostname.
-# Usage: scankai-site add|remove <hostname>
+# ScanDock: manage Apache vhost + Let's Encrypt certificate for one hostname.
+# Usage: scandock-site add|remove <hostname>
 # Allowed for www-data via sudoers; the hostname is strictly validated.
 set -euo pipefail
 
-BASE_DOMAIN="scankai.site"
-DOCROOT="/var/www/scankai/public"
+BASE_DOMAIN="scandock.cloud"
+DOCROOT="/var/www/scandock/public"
 WEBROOT="/var/www/letsencrypt"
 EMAIL="info@skywebhosting.de"
 
 action="${1:-}"; host="${2:-}"
-if ! [[ "$host" =~ ^([a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?\.)?scankai\.site$ ]]; then
+if ! [[ "$host" =~ ^([a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?\.)?scandock\.cloud$ ]]; then
     echo "Invalid hostname: $host" >&2; exit 2
 fi
-conf="/etc/apache2/sites-available/scankai-${host}.conf"
+conf="/etc/apache2/sites-available/scandock-${host}.conf"
 
 # The base domain and www serve the static landing page, everything else the app.
 if [ "$host" = "$BASE_DOMAIN" ] || [ "$host" = "www.$BASE_DOMAIN" ]; then
-    DOCROOT="/var/www/scankai/landing"
+    DOCROOT="/var/www/scandock/landing"
 fi
-OVERRIDE=$([ "$DOCROOT" = "/var/www/scankai/public" ] && echo All || echo None)
+OVERRIDE=$([ "$DOCROOT" = "/var/www/scandock/public" ] && echo All || echo None)
 
 case "$action" in
   add)
@@ -46,17 +46,17 @@ case "$action" in
     Header always set X-Content-Type-Options "nosniff"
     Header always set Referrer-Policy "same-origin"
 
-    ErrorLog \${APACHE_LOG_DIR}/scankai-error.log
-    CustomLog \${APACHE_LOG_DIR}/scankai-access.log combined
+    ErrorLog \${APACHE_LOG_DIR}/scandock-error.log
+    CustomLog \${APACHE_LOG_DIR}/scandock-access.log combined
 </VirtualHost>
 VHOST
-    a2ensite -q "scankai-${host}" >/dev/null
+    a2ensite -q "scandock-${host}" >/dev/null
     apache2ctl configtest >/dev/null 2>&1
     systemctl reload apache2
     echo "OK https://${host}/"
     ;;
   remove)
-    a2dissite -q "scankai-${host}" >/dev/null 2>&1 || true
+    a2dissite -q "scandock-${host}" >/dev/null 2>&1 || true
     rm -f "$conf"
     systemctl reload apache2
     certbot delete --cert-name "$host" -n --quiet || true

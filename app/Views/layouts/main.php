@@ -4,21 +4,21 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title><?= esc($title ?? 'ScanKai') ?><?= isset($tenant['name']) ? ' · ' . esc($tenant['name']) : '' ?></title>
+    <title><?= esc($title ?? 'ScanDock') ?><?= isset($tenant['name']) ? ' · ' . esc($tenant['name']) : '' ?></title>
     <link rel="icon" href="/favicon.ico" sizes="48x48">
     <link rel="icon" href="/favicon.svg" type="image/svg+xml">
     <link rel="apple-touch-icon" href="/apple-touch-icon.png">
     <meta name="csrf-header" content="<?= esc(config('Security')->headerName, 'attr') ?>">
     <meta name="csrf-token" content="<?= esc(csrf_hash(), 'attr') ?>">
-    <link rel="stylesheet" href="/css/app.css?v=<?= esc(config('ScanKai')->version) ?>">
+    <link rel="stylesheet" href="/css/app.css?v=<?= esc(config('ScanDock')->version) ?>">
 </head>
 <body>
 <header class="topbar">
-    <?php $scankai = config('ScanKai') ?>
+    <?php $scandock = config('ScanDock') ?>
     <div class="brand">
-        <a href="/"><img src="/logo-scankai.svg" alt="ScanKai"></a>
-        <?php if ($scankai->operatorLogo !== ''): ?>
-            <a class="operator" href="<?= esc($scankai->operatorUrl, 'attr') ?>" target="_blank" rel="noopener"><img src="<?= esc($scankai->operatorLogo, 'attr') ?>" alt="<?= esc($scankai->operatorName, 'attr') ?>"></a>
+        <a href="/"><img src="/logo-scandock.svg" alt="ScanDock"></a>
+        <?php if ($scandock->operatorLogo !== ''): ?>
+            <a class="operator" href="<?= esc($scandock->operatorUrl, 'attr') ?>" target="_blank" rel="noopener"><img src="<?= esc($scandock->operatorLogo, 'attr') ?>" alt="<?= esc($scandock->operatorName, 'attr') ?>"></a>
         <?php endif ?>
         <?php if (! empty($tenant['name'])): ?>
             <a class="tenant" href="/">
@@ -46,7 +46,7 @@
             <?= form_open('auth/logout') ?><button class="item">Abmelden</button><?= form_close() ?>
         </div>
     </details>
-    <script src="/js/user-menu.js?v=<?= esc(config('ScanKai')->version) ?>" defer></script>
+    <script src="/js/user-menu.js?v=<?= esc(config('ScanDock')->version) ?>" defer></script>
     <?php endif ?>
 </header>
 <main>
@@ -56,12 +56,12 @@
     <?php if (isset($secretDaysLeft)): ?>
         <?php if ($secretDaysLeft < 0): ?>
             <div class="flash err">Der geheime Clientschlüssel der Entra-App ist am <?= esc(date('d.m.Y', strtotime($tenant['entra_secret_expires_at']))) ?> abgelaufen. Neue Anmeldungen sind nicht mehr möglich. <a href="/admin/settings#secret">Jetzt erneuern</a></div>
-        <?php elseif ($secretDaysLeft <= config('ScanKai')->secretWarningDays): ?>
+        <?php elseif ($secretDaysLeft <= config('ScanDock')->secretWarningDays): ?>
             <div class="flash warn">Der geheime Clientschlüssel der Entra-App läuft <?= $secretDaysLeft === 0 ? 'heute' : 'in ' . $secretDaysLeft . ' Tag' . ($secretDaysLeft === 1 ? '' : 'en') ?> ab (<?= esc(date('d.m.Y', strtotime($tenant['entra_secret_expires_at']))) ?>). Danach kann sich niemand mehr anmelden. <a href="/admin/settings#secret">Jetzt erneuern</a></div>
         <?php endif ?>
     <?php endif ?>
     <?= $this->renderSection('content') ?>
 </main>
-<footer>ScanKai <?= esc(config('ScanKai')->version) ?> · <a href="https://github.com/Skittel/scankai">GitHub</a></footer>
+<footer>ScanDock <?= esc(config('ScanDock')->version) ?> · <a href="https://github.com/Skittel/scandock">GitHub</a></footer>
 </body>
 </html>

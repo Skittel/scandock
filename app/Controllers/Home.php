@@ -16,7 +16,7 @@ class Home extends BaseController
         if ($tenant === null) {
             return $this->response->setStatusCode(404)->setBody(view('message', [
                 'title'   => 'Unbekannter Zugang',
-                'message' => 'Unter dieser Adresse ist kein ScanKai-Zugang eingerichtet.',
+                'message' => 'Unter dieser Adresse ist kein ScanDock-Zugang eingerichtet.',
             ]));
         }
 

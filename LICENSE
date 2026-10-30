@@ -1,6 +1,6 @@
 MIT License with Attribution
 
-Copyright (c) 2026 Skittel (https://github.com/Skittel/scankai)
+Copyright (c) 2026 Skittel (https://github.com/Skittel/scandock)
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -14,7 +14,7 @@ following conditions:
 
 2. Attribution: Any project, repository or distribution that uses, contains or
    is derived from the Software must include a reference to
-   https://github.com/Skittel/scankai in its README (or equivalent primary
+   https://github.com/Skittel/scandock in its README (or equivalent primary
    documentation file). A visible notice in a running web application or on a
    website is NOT required.
 

@@ -74,11 +74,11 @@
             </div>
             <button class="button">Hinzufügen</button>
         <?= form_close() ?>
-        <p class="hint picker-hint">Vorschläge kommen aus Ihrem Microsoft-Verzeichnis, sofern ScanKai die Anwendungsberechtigungen <em>User.Read.All</em> und <em>Group.ReadBasic.All</em> hat. Sonst werden Personen vorgeschlagen, die sich schon angemeldet haben. Sie können auch direkt einen Anmeldenamen (name@firma.de) oder die Objekt-ID einer Gruppe eingeben.</p>
+        <p class="hint picker-hint">Vorschläge kommen aus Ihrem Microsoft-Verzeichnis, sofern ScanDock die Anwendungsberechtigungen <em>User.Read.All</em> und <em>Group.ReadBasic.All</em> hat. Sonst werden Personen vorgeschlagen, die sich schon angemeldet haben. Sie können auch direkt einen Anmeldenamen (name@firma.de) oder die Objekt-ID einer Gruppe eingeben.</p>
     <?php else: ?>
         <p class="hint">Bei öffentlichen Konten ist keine Zuordnung nötig.<?= $members !== [] ? ' Die bisher eingetragenen ' . count($members) . ' Personen/Gruppen bleiben gespeichert und gelten wieder, wenn das Konto privat wird.' : '' ?></p>
     <?php endif ?>
 </section>
-<script src="/js/secret-reveal.js?v=<?= esc(config('ScanKai')->version) ?>" defer></script>
-<script src="/js/member-picker.js?v=<?= esc(config('ScanKai')->version) ?>" defer></script>
+<script src="/js/secret-reveal.js?v=<?= esc(config('ScanDock')->version) ?>" defer></script>
+<script src="/js/member-picker.js?v=<?= esc(config('ScanDock')->version) ?>" defer></script>
 <?= $this->endSection() ?>

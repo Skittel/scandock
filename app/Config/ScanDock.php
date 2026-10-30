@@ -5,18 +5,18 @@ namespace Config;
 use CodeIgniter\Config\BaseConfig;
 
 /**
- * Application specific settings for ScanKai.
+ * Application specific settings for ScanDock.
  */
-class ScanKai extends BaseConfig
+class ScanDock extends BaseConfig
 {
     /**
      * Application version (major.minor.patch, each 0-999).
      */
-    public string $version = '0.0.18';
+    public string $version = '0.0.19';
 
     /**
      * Logo and homepage of the operator, shown in the header next to the
-     * ScanKai logo. Leave the logo empty to hide it.
+     * ScanDock logo. Leave the logo empty to hide it.
      */
     public string $operatorLogo = '/operator-logo.svg';
     public string $operatorName = 'Skittel';
@@ -25,7 +25,7 @@ class ScanKai extends BaseConfig
     /**
      * Domain below which every tenant gets its own subdomain.
      */
-    public string $baseDomain = 'scankai.site';
+    public string $baseDomain = 'scandock.cloud';
 
     /**
      * Subdomains that can never be used as tenant slugs.
@@ -40,19 +40,19 @@ class ScanKai extends BaseConfig
     /**
      * Connection data shown to admins for configuring the copiers.
      */
-    public string $ftpHost         = 'ftp.scankai.site';
+    public string $ftpHost         = 'ftp.scandock.cloud';
     public int $ftpPort            = 21;
     public int $ftpImplicitTlsPort = 990;
 
     /**
      * Directory that ProFTPD writes uploads into (one subdirectory per FTP account).
      */
-    public string $incomingPath = '/srv/scankai/incoming';
+    public string $incomingPath = '/srv/scandock/incoming';
 
     /**
      * Directory where ingested scans and their thumbnails are stored.
      */
-    public string $storagePath = '/srv/scankai/storage';
+    public string $storagePath = '/srv/scandock/storage';
 
     /**
      * Default retention for new tenants in days.
@@ -86,5 +86,5 @@ class ScanKai extends BaseConfig
      * Apache vhost settings for tenant sites.
      */
     public string $apacheSitesPath = '/etc/apache2/sites-available';
-    public string $documentRoot    = '/var/www/scankai/public';
+    public string $documentRoot    = '/var/www/scandock/public';
 }

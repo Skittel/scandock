@@ -1,9 +1,9 @@
-# ScanKai logo
+# ScanDock logo
 
 Design by the project owner. `mklogo.py` generates from it:
 
-- `logo-scankai.svg` – full logo, the wave undulates very slowly (20 s cycle, SMIL)
-- `logo-scankai-icon.svg` – square icon, animated
+- `logo-scandock.svg` – full logo, the wave undulates very slowly (20 s cycle, SMIL)
+- `logo-scandock-icon.svg` – square icon, animated
 - `favicon.svg` – square icon, static (also rendered to `favicon.ico` and `apple-touch-icon.png`)
 
 The wordmark ("Scan" navy, "Kai" blue gradient) is converted to outlines using

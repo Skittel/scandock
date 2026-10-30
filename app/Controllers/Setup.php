@@ -26,7 +26,7 @@ class Setup extends BaseController
             'redirectUri' => site_url('auth/callback'),
             'logoutUri'   => site_url('/'),
             'configured'  => ! empty($tenant['entra_client_secret']),
-            'maxExpiry'   => date('Y-m-d', strtotime('+' . config('ScanKai')->secretMaxLifetimeDays . ' days')),
+            'maxExpiry'   => date('Y-m-d', strtotime('+' . config('ScanDock')->secretMaxLifetimeDays . ' days')),
             'errors'      => session()->getFlashdata('errors') ?? [],
             'loginError'  => session()->getFlashdata('login_error'),
         ]);

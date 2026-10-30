@@ -124,6 +124,6 @@
     </details>
     <?php endforeach ?>
 </div>
-<script src="/js/scans-accordion.js?v=<?= esc(config('ScanKai')->version) ?>" defer></script>
+<script src="/js/scans-accordion.js?v=<?= esc(config('ScanDock')->version) ?>" defer></script>
 <?php endif ?>
 <?= $this->endSection() ?>

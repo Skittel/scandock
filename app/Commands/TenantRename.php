@@ -11,7 +11,7 @@ use CodeIgniter\CLI\CLI;
  */
 class TenantRename extends BaseCommand
 {
-    protected $group       = 'ScanKai';
+    protected $group       = 'ScanDock';
     protected $name        = 'tenant:rename';
     protected $description = 'Changes the display name (company name) of a tenant.';
     protected $usage       = 'tenant:rename <slug> "Display name"';

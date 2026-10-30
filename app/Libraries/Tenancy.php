@@ -3,7 +3,7 @@
 namespace App\Libraries;
 
 use App\Models\TenantModel;
-use Config\ScanKai;
+use Config\ScanDock;
 
 /**
  * Resolves the tenant of the current request from the host name.
@@ -13,13 +13,13 @@ class Tenancy
     private bool $resolved  = false;
     private ?array $tenant  = null;
 
-    public function __construct(private readonly ScanKai $config)
+    public function __construct(private readonly ScanDock $config)
     {
     }
 
     /**
-     * Returns the slug for a host like "beecken.scankai.site", or null if the
-     * host is the bare base domain or does not belong to ScanKai.
+     * Returns the slug for a host like "beecken.scandock.cloud", or null if the
+     * host is the bare base domain or does not belong to ScanDock.
      */
     public function slugFromHost(string $host): ?string
     {

@@ -11,7 +11,7 @@ use CodeIgniter\CLI\CLI;
  */
 class ScansIngest extends BaseCommand
 {
-    protected $group       = 'ScanKai';
+    protected $group       = 'ScanDock';
     protected $name        = 'scans:ingest';
     protected $description = 'Imports completed FTP uploads into storage.';
 

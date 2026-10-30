@@ -1,12 +1,12 @@
 [Unit]
-Description=ScanKai: import FTP uploads immediately
+Description=ScanDock: import FTP uploads immediately
 After=network.target mariadb.service
 
 [Service]
 User=www-data
 Group=www-data
-SupplementaryGroups=scankai
-ExecStart=/usr/local/sbin/scankai-upload-watch
+SupplementaryGroups=scandock
+ExecStart=/usr/local/sbin/scandock-upload-watch
 Restart=always
 RestartSec=5
 

@@ -56,7 +56,7 @@ class FileCrypto
 
         try {
             if (fread($in, 4) !== self::MAGIC) {
-                throw new RuntimeException('Not an encrypted ScanKai file.');
+                throw new RuntimeException('Not an encrypted ScanDock file.');
             }
             $state = sodium_crypto_secretstream_xchacha20poly1305_init_pull(
                 (string) fread($in, SODIUM_CRYPTO_SECRETSTREAM_XCHACHA20POLY1305_HEADERBYTES),
@@ -92,7 +92,7 @@ class FileCrypto
     public static function ramDirectory(): string
     {
         $base = is_dir('/dev/shm') && is_writable('/dev/shm') ? '/dev/shm' : sys_get_temp_dir();
-        $dir  = $base . '/scankai-' . bin2hex(random_bytes(8));
+        $dir  = $base . '/scandock-' . bin2hex(random_bytes(8));
         if (! mkdir($dir, 0700)) {
             throw new RuntimeException('Cannot create working directory.');
         }

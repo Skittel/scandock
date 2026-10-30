@@ -11,7 +11,7 @@ use CodeIgniter\CLI\CLI;
  */
 class ScansEncrypt extends BaseCommand
 {
-    protected $group       = 'ScanKai';
+    protected $group       = 'ScanDock';
     protected $name        = 'scans:encrypt';
     protected $description = 'Encrypts all scans that are still stored unencrypted.';
 

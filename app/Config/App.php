@@ -205,9 +205,9 @@ class App extends BaseConfig
         parent::__construct();
 
         // Each tenant runs on its own subdomain, so the base URL follows the
-        // requested host as long as it belongs to the ScanKai domain.
+        // requested host as long as it belongs to the ScanDock domain.
         $host = strtolower($_SERVER['HTTP_HOST'] ?? '');
-        $base = (new ScanKai())->baseDomain;
+        $base = (new ScanDock())->baseDomain;
         if ($host === $base || preg_match('/^[a-z0-9-]+\\.' . preg_quote($base, '/') . '$/', $host) === 1) {
             $this->baseURL = 'https://' . $host . '/';
         }

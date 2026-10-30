@@ -1,0 +1,9 @@
+[Unit]
+Description=ScanDock: import FTP uploads
+
+[Service]
+Type=oneshot
+User=www-data
+Group=www-data
+SupplementaryGroups=scandock
+ExecStart=/usr/bin/php /var/www/scandock/spark scans:ingest

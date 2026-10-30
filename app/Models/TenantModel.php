@@ -108,7 +108,7 @@ class TenantModel extends Model
         if ($parsed <= new \DateTimeImmutable('today')) {
             return 'Das Ablaufdatum des Clientschlüssels liegt in der Vergangenheit.';
         }
-        if ($parsed > new \DateTimeImmutable('+' . config('ScanKai')->secretMaxLifetimeDays . ' days')) {
+        if ($parsed > new \DateTimeImmutable('+' . config('ScanDock')->secretMaxLifetimeDays . ' days')) {
             return 'Das Ablaufdatum liegt unplausibel weit in der Zukunft. Bitte das Datum aus Entra übernehmen.';
         }
 

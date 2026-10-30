@@ -26,7 +26,7 @@ class Settings extends BaseController
 
         return $this->render('admin/settings', [
             'userGroups' => UserModel::groupIds($this->currentUser()),
-            'maxExpiry'  => date('Y-m-d', strtotime('+' . config('ScanKai')->secretMaxLifetimeDays . ' days')),
+            'maxExpiry'  => date('Y-m-d', strtotime('+' . config('ScanDock')->secretMaxLifetimeDays . ' days')),
         ]);
     }
 

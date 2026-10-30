@@ -14,7 +14,7 @@ use CodeIgniter\CLI\CLI;
  */
 class TenantList extends BaseCommand
 {
-    protected $group       = 'ScanKai';
+    protected $group       = 'ScanDock';
     protected $name        = 'tenant:list';
     protected $description = 'Lists all tenants.';
 
@@ -47,6 +47,6 @@ class TenantList extends BaseCommand
             return CLI::color($label . ' EXPIRED', 'red');
         }
 
-        return $days <= config('ScanKai')->secretWarningDays ? CLI::color($label, 'yellow') : $label;
+        return $days <= config('ScanDock')->secretWarningDays ? CLI::color($label, 'yellow') : $label;
     }
 }

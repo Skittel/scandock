@@ -1,5 +1,5 @@
 [Unit]
-Description=ScanKai: import FTP uploads every 20 seconds
+Description=ScanDock: import FTP uploads every 20 seconds
 
 [Timer]
 OnBootSec=1min

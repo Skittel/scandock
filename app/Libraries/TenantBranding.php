@@ -4,7 +4,7 @@ namespace App\Libraries;
 
 use App\Models\TenantModel;
 use CodeIgniter\HTTP\Files\UploadedFile;
-use Config\ScanKai;
+use Config\ScanDock;
 
 /**
  * Stores and serves the customer logo.
@@ -20,7 +20,7 @@ class TenantBranding
         'image/svg+xml' => 'svg',
     ];
 
-    public function __construct(private readonly ScanKai $config)
+    public function __construct(private readonly ScanDock $config)
     {
     }
 

@@ -5,7 +5,7 @@ namespace App\Database\Migrations;
 use CodeIgniter\Database\Migration;
 
 /**
- * Customer logo shown in the header next to the ScanKai logo.
+ * Customer logo shown in the header next to the ScanDock logo.
  */
 class AddTenantLogo extends Migration
 {

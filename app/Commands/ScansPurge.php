@@ -10,7 +10,7 @@ use CodeIgniter\CLI\CLI;
  */
 class ScansPurge extends BaseCommand
 {
-    protected $group       = 'ScanKai';
+    protected $group       = 'ScanDock';
     protected $name        = 'scans:purge';
     protected $description = 'Deletes scans that are older than the retention period.';
 

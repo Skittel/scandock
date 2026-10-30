@@ -1,0 +1,8 @@
+[Unit]
+Description=ScanDock: delete expired scans
+
+[Service]
+Type=oneshot
+User=www-data
+Group=www-data
+ExecStart=/usr/bin/php /var/www/scandock/spark scans:purge

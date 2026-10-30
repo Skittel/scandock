@@ -6,7 +6,7 @@ use App\Models\FtpAccountModel;
 use App\Models\ScanModel;
 use App\Models\ScanRejectionModel;
 use App\Models\TenantModel;
-use Config\ScanKai;
+use Config\ScanDock;
 
 /**
  * Checks uploaded files, stores them encrypted (one key per tenant), renders
@@ -15,7 +15,7 @@ use Config\ScanKai;
  */
 class ScanStore
 {
-    public function __construct(private readonly ScanKai $config)
+    public function __construct(private readonly ScanDock $config)
     {
     }
 

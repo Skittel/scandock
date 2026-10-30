@@ -1,3 +1,3 @@
-# ScanKai: inspect uploads and write temporary decompressed copies
-/srv/scankai/incoming/** r,
-owner /var/www/scankai/writable/cache/pdfscan* rw,
+# ScanDock: inspect uploads and write temporary decompressed copies
+/srv/scandock/incoming/** r,
+owner /var/www/scandock/writable/cache/pdfscan* rw,

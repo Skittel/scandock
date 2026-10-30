@@ -11,7 +11,7 @@ use CodeIgniter\CLI\CLI;
  */
 class TenantLink extends BaseCommand
 {
-    protected $group       = 'ScanKai';
+    protected $group       = 'ScanDock';
     protected $name        = 'tenant:link';
     protected $description = 'Shows the current start link of a tenant.';
     protected $usage       = 'tenant:link <slug>';
@@ -29,7 +29,7 @@ class TenantLink extends BaseCommand
         $token = $tenants->currentSetupToken($tenant);
         if ($token === null) {
             CLI::write('No valid start link (setup finished or link already used).');
-            CLI::write('Create a new one with: scankai tenant:link-renew ' . $tenant['slug']);
+            CLI::write('Create a new one with: scandock tenant:link-renew ' . $tenant['slug']);
 
             return EXIT_SUCCESS;
         }

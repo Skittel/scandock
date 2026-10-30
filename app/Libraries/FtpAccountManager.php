@@ -4,7 +4,7 @@ namespace App\Libraries;
 
 use App\Models\FtpAccountModel;
 use App\Models\ScanModel;
-use Config\ScanKai;
+use Config\ScanDock;
 use RuntimeException;
 
 /**
@@ -18,7 +18,7 @@ class FtpAccountManager
      */
     private const ALPHABET = 'abcdefghjkmnpqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ23456789';
 
-    public function __construct(private readonly ScanKai $config)
+    public function __construct(private readonly ScanDock $config)
     {
     }
 

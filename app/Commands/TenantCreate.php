@@ -6,18 +6,18 @@ use App\Libraries\Tenancy;
 use App\Models\TenantModel;
 use CodeIgniter\CLI\BaseCommand;
 use CodeIgniter\CLI\CLI;
-use Config\ScanKai;
+use Config\ScanDock;
 
 /**
  * Creates a tenant with vhost and certificate and prints the start link.
  */
 class TenantCreate extends BaseCommand
 {
-    protected $group       = 'ScanKai';
+    protected $group       = 'ScanDock';
     protected $name        = 'tenant:create';
     protected $description = 'Creates a tenant (vhost, Let\'s Encrypt certificate) and prints its start link.';
     protected $usage       = 'tenant:create <slug> [--name "Display name"]';
-    protected $arguments   = ['slug' => 'Subdomain, e.g. "beecken" for beecken.scankai.site'];
+    protected $arguments   = ['slug' => 'Subdomain, e.g. "beecken" for beecken.scandock.cloud'];
     protected $options     = ['--name' => 'Display name of the customer (defaults to the slug)'];
 
     public function run(array $params)
@@ -39,7 +39,7 @@ class TenantCreate extends BaseCommand
 
         $host = $tenancy->hostFor($slug);
         CLI::write('Requesting certificate and creating vhost for ' . $host . ' ...');
-        exec('sudo -n /usr/local/sbin/scankai-site add ' . escapeshellarg($host) . ' 2>&1', $output, $exitCode);
+        exec('sudo -n /usr/local/sbin/scandock-site add ' . escapeshellarg($host) . ' 2>&1', $output, $exitCode);
         if ($exitCode !== 0) {
             CLI::error("Vhost/certificate setup failed:\n" . implode("\n", $output));
 
@@ -50,7 +50,7 @@ class TenantCreate extends BaseCommand
             'slug'           => $slug,
             'name'           => CLI::getOption('name') ?: $slug,
             'status'         => 'setup',
-            'retention_days' => config(ScanKai::class)->defaultRetentionDays,
+            'retention_days' => config(ScanDock::class)->defaultRetentionDays,
         ]);
         $token = $tenants->issueSetupToken((int) $id);
 

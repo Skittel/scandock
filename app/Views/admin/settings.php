@@ -28,7 +28,7 @@
                 <ul><?php foreach ($userGroups as $g): ?><li><code><?= esc($g) ?></code></li><?php endforeach ?></ul>
             </details>
         <?php else: ?>
-            <p class="hint warn">Laut letzter Anmeldung sind Sie in keiner Gruppe Mitglied. Beim Speichern einer Admin-Gruppe gleicht ScanKai Ihre Gruppen automatisch mit Microsoft ab. Voraussetzung ist die Berechtigung <em>Microsoft Graph → User.Read</em> in der App-Registrierung.</p>
+            <p class="hint warn">Laut letzter Anmeldung sind Sie in keiner Gruppe Mitglied. Beim Speichern einer Admin-Gruppe gleicht ScanDock Ihre Gruppen automatisch mit Microsoft ab. Voraussetzung ist die Berechtigung <em>Microsoft Graph → User.Read</em> in der App-Registrierung.</p>
         <?php endif ?>
         <label class="check"><input type="checkbox" name="confirm_lockout" value="1"> Ich bin nicht Mitglied der Gruppe und verliere bewusst meine Admin-Rechte</label>
 
@@ -44,11 +44,11 @@
         <p class="warn">Das Ablaufdatum des aktuellen Schlüssels ist nicht bekannt. Bitte beim nächsten Erneuern mit angeben.</p>
     <?php else: ?>
         <p>Der aktuelle Schlüssel läuft am <strong><?= esc(date('d.m.Y', strtotime($tenant['entra_secret_expires_at']))) ?></strong> ab<?= $secretDaysLeft !== null && $secretDaysLeft >= 0 ? ' (in ' . $secretDaysLeft . ' Tagen)' : ' – <strong>abgelaufen</strong>' ?>.
-        Administratoren werden <?= config('ScanKai')->secretWarningDays ?> Tage vorher hier in ScanKai gewarnt.</p>
+        Administratoren werden <?= config('ScanDock')->secretWarningDays ?> Tage vorher hier in ScanDock gewarnt.</p>
     <?php endif ?>
     <ol class="hint">
-        <li>In Entra unter <strong>App-Registrierungen → ScanKai → Zertifikate &amp; Geheimnisse</strong> einen <strong>neuen geheimen Clientschlüssel</strong> erstellen.</li>
-        <li>Den <strong>Wert</strong> und das <strong>Ablaufdatum</strong> hier eintragen. ScanKai prüft den Schlüssel direkt bei Microsoft.</li>
+        <li>In Entra unter <strong>App-Registrierungen → ScanDock → Zertifikate &amp; Geheimnisse</strong> einen <strong>neuen geheimen Clientschlüssel</strong> erstellen.</li>
+        <li>Den <strong>Wert</strong> und das <strong>Ablaufdatum</strong> hier eintragen. ScanDock prüft den Schlüssel direkt bei Microsoft.</li>
         <li>Erst danach den alten Schlüssel in Entra löschen.</li>
     </ol>
     <?= form_open('admin/settings/secret', ['class' => 'form']) ?>

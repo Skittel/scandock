@@ -10,7 +10,7 @@ use UnexpectedValueException;
 
 /**
  * Minimal OpenID Connect client for Microsoft Entra ID (authorization code
- * flow with PKCE). Every ScanKai tenant uses its own app registration in its
+ * flow with PKCE). Every ScanDock tenant uses its own app registration in its
  * own Entra tenant.
  */
 class EntraOidc
@@ -19,7 +19,7 @@ class EntraOidc
     private const GRAPH_HOST = 'https://graph.microsoft.com/v1.0';
 
     /**
-     * User.Read lets ScanKai read the signed-in user's own group memberships
+     * User.Read lets ScanDock read the signed-in user's own group memberships
      * from Microsoft Graph. It is granted by default and needs no admin consent.
      */
     private const SCOPES = 'openid profile email User.Read';

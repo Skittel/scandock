@@ -36,7 +36,7 @@ class Services extends BaseService
             return static::getSharedInstance('tenancy');
         }
 
-        return new \App\Libraries\Tenancy(config(ScanKai::class));
+        return new \App\Libraries\Tenancy(config(ScanDock::class));
     }
 
     public static function entra(bool $getShared = true): \App\Libraries\EntraOidc
@@ -54,7 +54,7 @@ class Services extends BaseService
             return static::getSharedInstance('ftpAccountManager');
         }
 
-        return new \App\Libraries\FtpAccountManager(config(ScanKai::class));
+        return new \App\Libraries\FtpAccountManager(config(ScanDock::class));
     }
 
     public static function scanStore(bool $getShared = true): \App\Libraries\ScanStore
@@ -63,7 +63,7 @@ class Services extends BaseService
             return static::getSharedInstance('scanStore');
         }
 
-        return new \App\Libraries\ScanStore(config(ScanKai::class));
+        return new \App\Libraries\ScanStore(config(ScanDock::class));
     }
 
     public static function directory(bool $getShared = true): \App\Libraries\DirectoryClient
@@ -90,7 +90,7 @@ class Services extends BaseService
             return static::getSharedInstance('tenantBranding');
         }
 
-        return new \App\Libraries\TenantBranding(config(ScanKai::class));
+        return new \App\Libraries\TenantBranding(config(ScanDock::class));
     }
 
     public static function scanAccess(bool $getShared = true): \App\Libraries\ScanAccess

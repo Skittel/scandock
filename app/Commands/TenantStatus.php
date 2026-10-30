@@ -11,7 +11,7 @@ use CodeIgniter\CLI\CLI;
  */
 class TenantStatus extends BaseCommand
 {
-    protected $group       = 'ScanKai';
+    protected $group       = 'ScanDock';
     protected $name        = 'tenant:status';
     protected $description = 'Disables or enables a tenant.';
     protected $usage       = 'tenant:status <slug> disable|enable';

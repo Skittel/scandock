@@ -46,7 +46,7 @@ class FtpAccounts extends BaseController
     public function show(string $id): string
     {
         $account = $this->findAccount($id);
-        $config  = config('ScanKai');
+        $config  = config('ScanDock');
 
         return $this->render('admin/ftp_show', [
             'account'  => $account,

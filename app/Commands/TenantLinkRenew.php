@@ -13,7 +13,7 @@ use CodeIgniter\CLI\CLI;
  */
 class TenantLinkRenew extends BaseCommand
 {
-    protected $group       = 'ScanKai';
+    protected $group       = 'ScanDock';
     protected $name        = 'tenant:link-renew';
     protected $description = 'Creates a new start link for a tenant (invalidates the previous one).';
     protected $usage       = 'tenant:link-renew <slug>';
