@@ -12,7 +12,7 @@ class UserModel extends Model
     protected $table         = 'users';
     protected $returnType    = 'array';
     protected $useTimestamps = true;
-    protected $allowedFields = ['tenant_id', 'entra_oid', 'upn', 'name', 'group_ids', 'collapsed_accounts', 'theme', 'last_login_at'];
+    protected $allowedFields = ['tenant_id', 'entra_oid', 'upn', 'name', 'group_ids', 'collapsed_accounts', 'account_views', 'theme', 'last_login_at'];
 
     /**
      * Creates or updates the user from validated ID token claims.
@@ -56,6 +56,16 @@ class UserModel extends Model
     public static function collapsedAccounts(array $user): array
     {
         return array_map('intval', json_decode($user['collapsed_accounts'] ?? '[]', true) ?: []);
+    }
+
+    /**
+     * IDs of the FTP accounts the user shows as a list instead of tiles.
+     *
+     * @return list<int>
+     */
+    public static function listAccounts(array $user): array
+    {
+        return array_map('intval', json_decode($user['account_views'] ?? '[]', true) ?: []);
     }
 
     /**

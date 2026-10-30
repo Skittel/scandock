@@ -1,5 +1,5 @@
-// Scan page: collapsible FTP account sections (stored per user) and live
-// refresh of the list when new uploads arrive.
+// Scan page: collapsible FTP account sections and tile/list view per section
+// (both stored per user), plus live refresh when new uploads arrive.
 (function () {
     'use strict';
 
@@ -17,19 +17,41 @@
         return Array.prototype.slice.call(container.querySelectorAll('details.account'));
     }
 
+    function post(url, payload) {
+        var headers = { 'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest' };
+        headers[header] = token;
+
+        return fetch(url, { method: 'POST', credentials: 'same-origin', headers: headers, body: JSON.stringify(payload) });
+    }
+
+    function setView(section, view) {
+        section.classList.toggle('view-list', view === 'list');
+        section.classList.toggle('view-grid', view !== 'list');
+        section.querySelectorAll('[data-view]').forEach(function (b) {
+            b.setAttribute('aria-pressed', b.getAttribute('data-view') === view ? 'true' : 'false');
+        });
+    }
+
+    // View switch buttons sit inside <summary>: do not toggle the section.
+    container.addEventListener('click', function (event) {
+        var button = event.target.closest('[data-view]');
+        if (!button) {
+            return;
+        }
+        event.preventDefault();
+        event.stopPropagation();
+        var section = button.closest('details.account');
+        var view = button.getAttribute('data-view');
+        setView(section, view);
+        post(container.getAttribute('data-view-url'), { account: parseInt(section.getAttribute('data-account'), 10), view: view });
+    });
+
     function save() {
         clearTimeout(saveTimer);
         saveTimer = setTimeout(function () {
             var collapsed = sections().filter(function (s) { return !s.open; })
                 .map(function (s) { return parseInt(s.getAttribute('data-account'), 10); });
-            var headers = { 'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest' };
-            headers[header] = token;
-            fetch(container.getAttribute('data-save-url'), {
-                method: 'POST',
-                credentials: 'same-origin',
-                headers: headers,
-                body: JSON.stringify({ collapsed: collapsed })
-            });
+            post(container.getAttribute('data-save-url'), { collapsed: collapsed });
         }, 300);
     }
 
@@ -62,15 +84,20 @@
                 if (!fresh) {
                     return;
                 }
-                // Keep the open/closed state the user has right now.
+                // Keep the open/closed state and view the user has right now.
                 var state = {};
-                sections().forEach(function (s) { state[s.getAttribute('data-account')] = s.open; });
+                var views = {};
+                sections().forEach(function (s) {
+                    state[s.getAttribute('data-account')] = s.open;
+                    views[s.getAttribute('data-account')] = s.classList.contains('view-list') ? 'list' : 'grid';
+                });
                 swapping = true;
                 container.innerHTML = fresh.innerHTML;
                 sections().forEach(function (s) {
                     var id = s.getAttribute('data-account');
                     if (id in state) {
                         s.open = state[id];
+                        setView(s, views[id]);
                     }
                 });
                 setTimeout(function () { swapping = false; }, 0);

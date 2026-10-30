@@ -43,6 +43,7 @@ class Scans extends BaseController
             'rejected'  => model(ScanRejectionModel::class)->recentByAccount($accountIds),
             'pager'     => $scans->pager,
             'collapsed' => UserModel::collapsedAccounts($user),
+            'listViews' => UserModel::listAccounts($user),
             'expires'   => (int) $tenant['retention_days'],
         ]);
     }
@@ -68,6 +69,27 @@ class Scans extends BaseController
             'fingerprint' => md5(json_encode([$accountIds, $latest, $pendingKey, $rejected])),
             'pending'     => array_sum(array_map('count', $pending)),
         ]);
+    }
+
+    /**
+     * Stores tile or list view for one account section (JSON request).
+     */
+    public function saveView(): ResponseInterface
+    {
+        $user    = $this->currentUser();
+        $data    = (array) $this->request->getJSON(true);
+        $account = (int) ($data['account'] ?? 0);
+        if (! in_array($account, service('scanAccess')->visibleAccountIds($this->tenant(), $user), true)) {
+            return $this->response->setStatusCode(404)->setJSON(['ok' => false]);
+        }
+
+        $lists = array_values(array_diff(UserModel::listAccounts($user), [$account]));
+        if (($data['view'] ?? '') === 'list') {
+            $lists[] = $account;
+        }
+        model(UserModel::class)->update($user['id'], ['account_views' => json_encode($lists)]);
+
+        return $this->response->setJSON(['ok' => true]);
     }
 
     /**

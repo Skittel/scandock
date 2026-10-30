@@ -29,6 +29,7 @@ $routes->post('account/theme', 'Account::theme', ['filter' => ['tenant', 'auth']
 $routes->group('scans', ['filter' => ['tenant', 'auth']], static function ($routes) {
     $routes->get('/', 'Scans::index');
     $routes->post('collapsed', 'Scans::saveCollapsed');
+    $routes->post('view', 'Scans::saveView');
     $routes->get('status', 'Scans::status');
     $routes->get('(:num)/view', 'Scans::view/$1');
     $routes->get('(:num)/download', 'Scans::download/$1');

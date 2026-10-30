@@ -119,3 +119,22 @@ details.account[open] > summary { border-bottom:1px solid var(--line); }
 .user-menu .themes { display:flex; gap:.3rem; padding:.3rem 1rem .5rem; }
 .user-menu .themes button { flex:1; padding:.3rem .4rem; border:1px solid var(--line); border-radius:6px; background:var(--card); color:var(--fg); font:inherit; font-size:.85rem; cursor:pointer; }
 .user-menu .themes button[aria-pressed=true] { border-color:var(--accent); color:var(--accent); font-weight:600; }
+
+/* Tile or list view per account section */
+details.account.view-grid .scan-list { display:none; }
+details.account.view-list .grid { display:none; }
+.view-switch { display:inline-flex; gap:.25rem; margin-left:auto; }
+details.account > summary .view-switch + .count { margin-left:.6rem; }
+.view-switch .icon-button { width:28px; height:26px; }
+.view-switch .icon-button[aria-pressed=true] { color:var(--accent); border-color:var(--accent); background:var(--hover); }
+.scan-list td { vertical-align:middle; }
+.scan-list .col-thumb { width:56px; padding:.35rem .5rem; }
+.scan-list .col-thumb img { display:block; width:40px; height:52px; object-fit:contain; background:#fff; border:1px solid var(--line); border-radius:3px; }
+.scan-list .col-thumb .type { display:flex; align-items:center; justify-content:center; width:40px; height:52px; font-size:.7rem; color:var(--muted); background:var(--thumb); border-radius:3px; }
+.scan-list .name { display:inline-block; max-width:42ch; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; vertical-align:middle; }
+.scan-list .col-size { white-space:nowrap; text-align:right; }
+.scan-list .col-actions { white-space:nowrap; text-align:right; }
+.scan-list tr.pending td { color:var(--muted); }
+.scan-list tbody tr:hover { background:var(--hover); }
+.spinner.small { display:block; width:22px; height:22px; border-width:2px; margin:0 auto; }
+@media (max-width: 700px) { .scan-list .col-size, .scan-list thead { display:none; } }
