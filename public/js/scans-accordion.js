@@ -46,6 +46,44 @@
         post(container.getAttribute('data-view-url'), { account: parseInt(section.getAttribute('data-account'), 10), view: view });
     });
 
+    // List view: select all/none and delete the selection.
+    function updateBulk(section) {
+        var count = section.querySelectorAll('.scan-list input[name="ids[]"]:checked').length;
+        var button = section.querySelector('.bulk-delete button');
+        if (button) {
+            button.disabled = count === 0;
+            button.textContent = count > 0 ? 'Ausgewählte löschen (' + count + ')' : 'Ausgewählte löschen';
+        }
+    }
+
+    container.addEventListener('click', function (event) {
+        var button = event.target.closest('[data-select]');
+        if (!button) {
+            return;
+        }
+        var section = button.closest('details.account');
+        var all = button.getAttribute('data-select') === 'all';
+        section.querySelectorAll('.scan-list input[name="ids[]"]').forEach(function (box) { box.checked = all; });
+        updateBulk(section);
+    });
+
+    container.addEventListener('change', function (event) {
+        if (event.target.matches('.scan-list input[name="ids[]"]')) {
+            updateBulk(event.target.closest('details.account'));
+        }
+    });
+
+    container.addEventListener('submit', function (event) {
+        if (!event.target.matches('.bulk-delete')) {
+            return;
+        }
+        var section = event.target.closest('details.account');
+        var count = section.querySelectorAll('.scan-list input[name="ids[]"]:checked').length;
+        if (count === 0 || !window.confirm(count === 1 ? '1 Scan wirklich löschen?' : count + ' Scans wirklich löschen?')) {
+            event.preventDefault();
+        }
+    });
+
     function save() {
         clearTimeout(saveTimer);
         saveTimer = setTimeout(function () {
@@ -87,6 +125,7 @@
                 // Keep the open/closed state and view the user has right now.
                 var state = {};
                 var views = {};
+                var checked = Array.prototype.map.call(container.querySelectorAll('.scan-list input[name="ids[]"]:checked'), function (b) { return b.value; });
                 sections().forEach(function (s) {
                     state[s.getAttribute('data-account')] = s.open;
                     views[s.getAttribute('data-account')] = s.classList.contains('view-list') ? 'list' : 'grid';
@@ -100,6 +139,11 @@
                         setView(s, views[id]);
                     }
                 });
+                // Keep the selection of the list view (deleted scans simply disappear).
+                container.querySelectorAll('.scan-list input[name="ids[]"]').forEach(function (box) {
+                    box.checked = checked.indexOf(box.value) !== -1;
+                });
+                sections().forEach(updateBulk);
                 setTimeout(function () { swapping = false; }, 0);
                 pending = container.querySelector('.scan.pending') !== null;
             });

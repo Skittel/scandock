@@ -75,11 +75,21 @@
                 <?php endforeach ?>
             </div>
 
+            <?php if ($section['scans'] !== []): ?>
+            <div class="list-toolbar">
+                <button type="button" class="button small secondary" data-select="all">Alle</button>
+                <button type="button" class="button small secondary" data-select="none">Keine</button>
+                <?= form_open('scans/delete', ['id' => 'bulk-' . $id, 'class' => 'inline bulk-delete']) ?>
+                    <button class="button small danger" disabled>Ausgewählte löschen</button>
+                <?= form_close() ?>
+            </div>
+            <?php endif ?>
             <table class="table scan-list">
-                <thead><tr><th class="col-thumb"></th><th>Datei</th><th>Eingang</th><th class="col-size">Größe</th><th class="col-actions"></th></tr></thead>
+                <thead><tr><th class="col-check"></th><th class="col-thumb"></th><th>Datei</th><th>Eingang</th><th class="col-size">Größe</th><th class="col-actions"></th></tr></thead>
                 <tbody>
                 <?php foreach ($waiting as $file): ?>
                     <tr class="pending">
+                        <td class="col-check"></td>
                         <td class="col-thumb"><span class="spinner small" aria-hidden="true"></span></td>
                         <td><span class="name" title="<?= esc($file['name'], 'attr') ?>"><?= esc($file['name']) ?></span></td>
                         <td class="muted"><?= $file['state'] === 'uploading' ? 'Wird übertragen …' : 'Wird verarbeitet …' ?></td>
@@ -89,6 +99,7 @@
                 <?php endforeach ?>
                 <?php foreach ($section['scans'] as $scan): ?>
                     <tr>
+                        <td class="col-check"><input type="checkbox" name="ids[]" value="<?= $scan['id'] ?>" form="bulk-<?= $id ?>" aria-label="<?= esc($scan['original_name'], 'attr') ?> auswählen"></td>
                         <td class="col-thumb">
                             <a href="/scans/<?= $scan['id'] ?>/view" target="_blank" rel="noopener">
                                 <?php if ($scan['has_thumbnail']): ?><img src="/scans/<?= $scan['id'] ?>/thumbnail" alt="" loading="lazy"><?php else: ?><span class="type"><?= esc(strtoupper($scan['file_ext'] ?? 'pdf')) ?></span><?php endif ?>

@@ -30,6 +30,7 @@ $routes->group('scans', ['filter' => ['tenant', 'auth']], static function ($rout
     $routes->get('/', 'Scans::index');
     $routes->post('collapsed', 'Scans::saveCollapsed');
     $routes->post('view', 'Scans::saveView');
+    $routes->post('delete', 'Scans::deleteSelected');
     $routes->get('status', 'Scans::status');
     $routes->get('(:num)/view', 'Scans::view/$1');
     $routes->get('(:num)/download', 'Scans::download/$1');

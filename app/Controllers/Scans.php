@@ -141,6 +141,32 @@ class Scans extends BaseController
         return redirect()->back()->with('notice', 'Der Scan wurde gelöscht.');
     }
 
+    /**
+     * Deletes several scans at once (checkboxes in the list view). Scans the
+     * user may not access are skipped.
+     */
+    public function deleteSelected(): ResponseInterface
+    {
+        $ids = array_unique(array_map('intval', (array) $this->request->getPost('ids')));
+        if ($ids === []) {
+            return redirect()->back()->with('warning', 'Es wurden keine Scans ausgewählt.');
+        }
+
+        $tenant = $this->tenant();
+        $user   = $this->currentUser();
+        $store  = service('scanStore');
+        $access = service('scanAccess');
+        $count  = 0;
+        foreach (model(ScanModel::class)->whereIn('id', array_slice($ids, 0, 500))->findAll() as $scan) {
+            if ($access->canAccessScan($tenant, $user, $scan)) {
+                $store->delete($scan);
+                $count++;
+            }
+        }
+
+        return redirect()->back()->with('notice', $count === 1 ? '1 Scan wurde gelöscht.' : $count . ' Scans wurden gelöscht.');
+    }
+
     private function findScan(int $id): array
     {
         $scan = model(ScanModel::class)->find($id);
