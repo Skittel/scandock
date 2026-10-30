@@ -31,11 +31,13 @@ class Auth extends BaseController
             ]));
         }
 
-        $flow = service('entra')->beginLogin($tenant, site_url('auth/callback'));
+        $silent = $this->request->getGet('silent') === '1';
+        $flow   = service('entra')->beginLogin($tenant, site_url('auth/callback'), $silent);
         $session->set('oidc', [
             'state'    => $flow['state'],
             'nonce'    => $flow['nonce'],
             'verifier' => $flow['verifier'],
+            'silent'   => $silent,
         ]);
 
         return redirect()->to($flow['url']);
@@ -52,6 +54,10 @@ class Auth extends BaseController
             if (! is_array($flow) || ! hash_equals($flow['state'], (string) $this->request->getGet('state'))) {
                 throw new RuntimeException('Ungültiger oder abgelaufener Anmeldevorgang. Bitte erneut versuchen.');
             }
+            // A silent sign-in that needs user interaction is repeated with a prompt.
+            if (! empty($flow['silent']) && in_array($this->request->getGet('error'), ['login_required', 'interaction_required', 'consent_required'], true)) {
+                return redirect()->to('auth/login');
+            }
             if ($this->request->getGet('error')) {
                 throw new RuntimeException('Entra meldet: ' . strtok((string) $this->request->getGet('error_description'), "\r\n"));
             }
@@ -59,7 +65,7 @@ class Auth extends BaseController
                 throw new RuntimeException('Der Start-Link ist nicht mehr gültig.');
             }
 
-            $claims = service('entra')->completeLogin(
+            $result = service('entra')->completeLogin(
                 $tenant,
                 (string) $this->request->getGet('code'),
                 site_url('auth/callback'),
@@ -72,7 +78,8 @@ class Auth extends BaseController
             return $this->loginFailed($tenant, $e->getMessage());
         }
 
-        $groupIds = EntraOidc::groupIds($claims);
+        $claims   = $result['claims'];
+        $groupIds = $this->collectGroupIds($claims, $result['access_token']);
         $user     = model(UserModel::class)->upsertFromLogin(
             (int) $tenant['id'],
             strtolower((string) $claims['oid']),
@@ -89,13 +96,20 @@ class Auth extends BaseController
             $session->setFlashdata('notice', 'Die Anmeldung mit Microsoft Entra ID funktioniert. Die Einrichtung ist abgeschlossen, der Start-Link ist nun ungültig.');
         }
         if ($groupIds === null) {
-            $session->setFlashdata('warning', 'Ihr Konto ist Mitglied in zu vielen Gruppen; Entra hat keine Gruppenliste übermittelt. Gruppenbasierte Rechte greifen daher nicht.');
+            $session->setFlashdata('warning', 'Ihre Gruppenmitgliedschaften konnten nicht von Microsoft abgerufen werden. Gruppenbasierte Rechte greifen daher nicht.');
         }
 
+        $return = $session->get('login_return');
+        $session->remove('login_return');
         $session->regenerate(true);
-        $session->set(['tenant_id' => (int) $tenant['id'], 'user_id' => (int) $user['id']]);
+        $session->set([
+            'tenant_id'          => (int) $tenant['id'],
+            'user_id'            => (int) $user['id'],
+            'graph_token'        => $result['access_token'],
+            'graph_token_expiry' => $result['expires_at'],
+        ]);
 
-        return redirect()->to('/scans');
+        return redirect()->to(is_string($return) && str_starts_with($return, '/') && ! str_starts_with($return, '//') ? $return : '/scans');
     }
 
     public function logout(): string
@@ -107,6 +121,23 @@ class Auth extends BaseController
             'message' => 'Sie wurden von ScanKai abgemeldet.',
             'link'    => ['url' => site_url('auth/login'), 'label' => 'Erneut anmelden'],
         ]);
+    }
+
+    /**
+     * Groups from Microsoft Graph, combined with the optional groups claim.
+     * Returns null if neither source delivered a list.
+     *
+     * @return list<string>|null
+     */
+    private function collectGroupIds(array $claims, ?string $accessToken): ?array
+    {
+        $fromClaim = EntraOidc::groupIds($claims);
+        $fromGraph = $accessToken === null ? null : service('entra')->fetchGroupIds($accessToken);
+        if ($fromClaim === null && $fromGraph === null) {
+            return null;
+        }
+
+        return array_values(array_unique(array_merge($fromClaim ?? [], $fromGraph ?? [])));
     }
 
     private function validSetupToken(array $tenant): bool

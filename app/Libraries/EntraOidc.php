@@ -16,14 +16,23 @@ use UnexpectedValueException;
 class EntraOidc
 {
     private const LOGIN_HOST = 'https://login.microsoftonline.com';
+    private const GRAPH_HOST = 'https://graph.microsoft.com/v1.0';
+
+    /**
+     * User.Read lets ScanKai read the signed-in user's own group memberships
+     * from Microsoft Graph. It is granted by default and needs no admin consent.
+     */
+    private const SCOPES = 'openid profile email User.Read';
 
     /**
      * Builds the authorization URL and returns it together with the values
      * that must be kept in the session until the callback.
      *
+     * With $silent the user is not prompted if a Microsoft session exists.
+     *
      * @return array{url: string, state: string, nonce: string, verifier: string}
      */
-    public function beginLogin(array $tenant, string $redirectUri): array
+    public function beginLogin(array $tenant, string $redirectUri, bool $silent = false): array
     {
         $state    = bin2hex(random_bytes(16));
         $nonce    = bin2hex(random_bytes(16));
@@ -35,12 +44,12 @@ class EntraOidc
             'response_type'         => 'code',
             'redirect_uri'          => $redirectUri,
             'response_mode'         => 'query',
-            'scope'                 => 'openid profile email',
+            'scope'                 => self::SCOPES,
             'state'                 => $state,
             'nonce'                 => $nonce,
             'code_challenge'        => $challenge,
             'code_challenge_method' => 'S256',
-            'prompt'                => 'select_account',
+            'prompt'                => $silent ? 'none' : 'select_account',
         ]);
 
         return [
@@ -52,7 +61,10 @@ class EntraOidc
     }
 
     /**
-     * Exchanges the authorization code and returns the validated ID token claims.
+     * Exchanges the authorization code. Returns the validated ID token claims
+     * and the access token for Microsoft Graph.
+     *
+     * @return array{claims: array, access_token: ?string, expires_at: int}
      *
      * @throws RuntimeException on any failure
      */
@@ -72,7 +84,7 @@ class EntraOidc
                     'code'          => $code,
                     'redirect_uri'  => $redirectUri,
                     'code_verifier' => $verifier,
-                    'scope'         => 'openid profile email',
+                    'scope'         => self::SCOPES,
                 ],
             ]);
 
@@ -82,7 +94,42 @@ class EntraOidc
             throw new RuntimeException(self::describeError($error));
         }
 
-        return $this->validateIdToken($tenant, $body['id_token'], $nonce);
+        return [
+            'claims'       => $this->validateIdToken($tenant, $body['id_token'], $nonce),
+            'access_token' => $body['access_token'] ?? null,
+            'expires_at'   => time() + (int) ($body['expires_in'] ?? 0) - 60,
+        ];
+    }
+
+    /**
+     * Reads the IDs of all groups the signed-in user belongs to (direct and
+     * nested, security and Microsoft 365 groups) from Microsoft Graph.
+     *
+     * @return list<string>|null null if Graph could not be queried
+     */
+    public function fetchGroupIds(string $accessToken): ?array
+    {
+        $client = service('curlrequest', ['timeout' => 15, 'http_errors' => false]);
+        $url    = self::GRAPH_HOST . '/me/transitiveMemberOf?$select=id&$top=999';
+        $ids    = [];
+
+        for ($page = 0; $url !== null && $page < 20; $page++) {
+            $response = $client->get($url, ['headers' => ['Authorization' => 'Bearer ' . $accessToken]]);
+            if ($response->getStatusCode() !== 200) {
+                log_message('warning', 'Graph group lookup failed: HTTP {code}', ['code' => $response->getStatusCode()]);
+
+                return null;
+            }
+            $body = json_decode($response->getBody(), true) ?: [];
+            foreach ($body['value'] ?? [] as $object) {
+                if (($object['@odata.type'] ?? '') === '#microsoft.graph.group' && ! empty($object['id'])) {
+                    $ids[] = strtolower($object['id']);
+                }
+            }
+            $url = $body['@odata.nextLink'] ?? null;
+        }
+
+        return array_values(array_unique($ids));
     }
 
     /**

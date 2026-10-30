@@ -41,6 +41,14 @@ class UserModel extends Model
     }
 
     /**
+     * @param list<string> $groupIds
+     */
+    public function updateGroups(int $userId, array $groupIds): void
+    {
+        $this->update($userId, ['group_ids' => json_encode(array_values($groupIds))]);
+    }
+
+    /**
      * @return list<string>
      */
     public static function groupIds(array $user): array

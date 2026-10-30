@@ -14,8 +14,16 @@ class Settings extends BaseController
 {
     private const GUID = '/^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/';
 
-    public function index(): string
+    public function index(): ResponseInterface|string
     {
+        // Continue a save that needed a silent sign-in to refresh the groups.
+        $pending = session('pending_settings');
+        if (is_array($pending)) {
+            session()->remove('pending_settings');
+
+            return $this->applySettings($pending, true);
+        }
+
         return $this->render('admin/settings', [
             'userGroups' => UserModel::groupIds($this->currentUser()),
             'maxExpiry'  => date('Y-m-d', strtotime('+' . config('ScanKai')->secretMaxLifetimeDays . ' days')),
@@ -24,20 +32,45 @@ class Settings extends BaseController
 
     public function save(): ResponseInterface
     {
+        return $this->applySettings($this->request->getPost(['admin_group_id', 'retention_days', 'confirm_lockout']), false);
+    }
+
+    /**
+     * Validates and stores the settings. If the user does not seem to be a
+     * member of the new admin group, the group memberships are synchronised
+     * with Microsoft first (directly or via a silent sign-in).
+     */
+    private function applySettings(array $input, bool $afterSync): ResponseInterface
+    {
         $tenant    = $this->tenant();
-        $groupId   = strtolower(trim((string) $this->request->getPost('admin_group_id')));
-        $retention = (int) $this->request->getPost('retention_days');
+        $user      = $this->currentUser();
+        $groupId   = strtolower(trim((string) ($input['admin_group_id'] ?? '')));
+        $retention = (int) ($input['retention_days'] ?? 0);
+        $confirmed = ($input['confirm_lockout'] ?? '') === '1';
 
         if ($groupId !== '' && preg_match(self::GUID, $groupId) !== 1) {
-            return redirect()->back()->withInput()->with('error', 'Die Objekt-ID der Admin-Gruppe hat nicht das erwartete Format.');
+            return redirect()->to('admin/settings')->withInput()->with('error', 'Die Objekt-ID der Admin-Gruppe hat nicht das erwartete Format.');
         }
         if ($retention < 1 || $retention > 999) {
-            return redirect()->back()->withInput()->with('error', 'Die Aufbewahrungsdauer muss zwischen 1 und 999 Tagen liegen.');
+            return redirect()->to('admin/settings')->withInput()->with('error', 'Die Aufbewahrungsdauer muss zwischen 1 und 999 Tagen liegen.');
         }
+
         // Prevent admins from locking themselves out.
-        if ($groupId !== '' && ! in_array($groupId, UserModel::groupIds($this->currentUser()), true)
-            && $this->request->getPost('confirm_lockout') !== '1') {
-            return redirect()->back()->withInput()->with('error', 'Laut Ihrer letzten Anmeldung sind Sie nicht Mitglied dieser Gruppe und würden Ihre Admin-Rechte verlieren. Gruppenmitgliedschaften übermittelt Microsoft nur bei der Anmeldung: Nach Änderungen bitte ab- und wieder anmelden. Zum Bestätigen das Häkchen setzen.');
+        if ($groupId !== '' && ! $confirmed && ! in_array($groupId, UserModel::groupIds($user), true)) {
+            if (! $afterSync) {
+                $fresh = $this->groupsFromGraph();
+                if ($fresh === null) {
+                    // Access token expired: refresh the groups by a silent sign-in and continue afterwards.
+                    session()->set(['pending_settings' => $input, 'login_return' => '/admin/settings']);
+
+                    return redirect()->to('auth/login?silent=1');
+                }
+                model(UserModel::class)->updateGroups((int) $user['id'], $fresh);
+                $user = model(UserModel::class)->find($user['id']);
+            }
+            if (! in_array($groupId, UserModel::groupIds($user), true)) {
+                return redirect()->to('admin/settings')->withInput()->with('error', 'Ihre Gruppen wurden gerade mit Microsoft abgeglichen: Sie sind nicht Mitglied dieser Gruppe und würden Ihre Admin-Rechte verlieren. Bitte die Objekt-ID prüfen oder zum Bestätigen das Häkchen setzen.');
+            }
         }
 
         model(TenantModel::class)->update($tenant['id'], [
@@ -46,6 +79,22 @@ class Settings extends BaseController
         ]);
 
         return redirect()->to('admin/settings')->with('notice', 'Einstellungen gespeichert.');
+    }
+
+    /**
+     * Current group IDs from Microsoft Graph, or null if the access token of
+     * this session is missing or expired.
+     *
+     * @return list<string>|null
+     */
+    private function groupsFromGraph(): ?array
+    {
+        $token = session('graph_token');
+        if (! is_string($token) || (int) session('graph_token_expiry') <= time()) {
+            return null;
+        }
+
+        return service('entra')->fetchGroupIds($token);
     }
 
     /**
