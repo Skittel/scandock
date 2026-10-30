@@ -43,7 +43,7 @@
         var section = button.closest('details.account');
         var view = button.getAttribute('data-view');
         setView(section, view);
-        post(container.getAttribute('data-view-url'), { account: parseInt(section.getAttribute('data-account'), 10), view: view });
+        post(container.getAttribute('data-view-url'), { account: section.getAttribute('data-account'), view: view });
     });
 
     // List view: select all/none and delete the selection.
@@ -88,7 +88,7 @@
         clearTimeout(saveTimer);
         saveTimer = setTimeout(function () {
             var collapsed = sections().filter(function (s) { return !s.open; })
-                .map(function (s) { return parseInt(s.getAttribute('data-account'), 10); });
+                .map(function (s) { return s.getAttribute('data-account'); });
             post(container.getAttribute('data-save-url'), { collapsed: collapsed });
         }, 300);
     }

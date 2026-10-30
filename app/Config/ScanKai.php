@@ -12,7 +12,7 @@ class ScanKai extends BaseConfig
     /**
      * Application version (major.minor.patch, each 0-999).
      */
-    public string $version = '0.0.17';
+    public string $version = '0.0.18';
 
     /**
      * Logo and homepage of the operator, shown in the header next to the

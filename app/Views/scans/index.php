@@ -16,7 +16,7 @@
 <?php else: ?>
 <div class="accordion" data-save-url="<?= esc(site_url('scans/collapsed'), 'attr') ?>" data-view-url="<?= esc(site_url('scans/view'), 'attr') ?>" data-status-url="<?= esc(site_url('scans/status'), 'attr') ?>">
     <?php foreach ($sections as $section): $account = $section['account']; $id = (int) $account['id']; $isList = in_array($id, $listViews, true); ?>
-    <details class="account <?= $isList ? 'view-list' : 'view-grid' ?>" data-account="<?= $id ?>" <?= in_array($id, $collapsed, true) ? '' : 'open' ?>>
+    <details class="account <?= $isList ? 'view-list' : 'view-grid' ?>" data-account="<?= esc($account['public_id']) ?>" <?= in_array($id, $collapsed, true) ? '' : 'open' ?>>
         <summary>
             <span class="title"><?= esc($account['label']) ?></span>
             <span class="badge"><?= $account['visibility'] === 'public' ? 'öffentlich' : 'privat' ?></span>
@@ -54,9 +54,9 @@
                 <?php endforeach ?>
                 <?php foreach ($section['scans'] as $scan): ?>
                 <article class="scan">
-                    <a href="/scans/<?= $scan['id'] ?>/view" target="_blank" rel="noopener" class="thumb">
+                    <a href="/scans/<?= esc($scan['public_id']) ?>/view" target="_blank" rel="noopener" class="thumb">
                         <?php if ($scan['has_thumbnail']): ?>
-                            <img src="/scans/<?= $scan['id'] ?>/thumbnail" alt="Vorschau" loading="lazy">
+                            <img src="/scans/<?= esc($scan['public_id']) ?>/thumbnail" alt="Vorschau" loading="lazy">
                         <?php else: ?>
                             <span class="nothumb"><?= esc(strtoupper($scan['file_ext'] ?? 'pdf')) ?></span>
                         <?php endif ?>
@@ -66,8 +66,8 @@
                         <small><?= esc(date('d.m.Y H:i', strtotime($scan['received_at']))) ?> · <?= number_to_size($scan['size'], 1, 'de') ?></small>
                     </div>
                     <div class="actions">
-                        <a class="button small" href="/scans/<?= $scan['id'] ?>/download">Herunterladen</a>
-                        <?= form_open('scans/' . $scan['id'] . '/delete', ['class' => 'inline', 'onsubmit' => "return confirm('Scan wirklich löschen?')"]) ?>
+                        <a class="button small" href="/scans/<?= esc($scan['public_id']) ?>/download">Herunterladen</a>
+                        <?= form_open('scans/' . $scan['public_id'] . '/delete', ['class' => 'inline', 'onsubmit' => "return confirm('Scan wirklich löschen?')"]) ?>
                             <button class="button small danger">Löschen</button>
                         <?= form_close() ?>
                     </div>
@@ -79,7 +79,7 @@
             <div class="list-toolbar">
                 <button type="button" class="button small secondary" data-select="all">Alle</button>
                 <button type="button" class="button small secondary" data-select="none">Keine</button>
-                <?= form_open('scans/delete', ['id' => 'bulk-' . $id, 'class' => 'inline bulk-delete']) ?>
+                <?= form_open('scans/delete', ['id' => 'bulk-' . $account['public_id'], 'class' => 'inline bulk-delete']) ?>
                     <button class="button small danger" disabled>Ausgewählte löschen</button>
                 <?= form_close() ?>
             </div>
@@ -99,18 +99,18 @@
                 <?php endforeach ?>
                 <?php foreach ($section['scans'] as $scan): ?>
                     <tr>
-                        <td class="col-check"><input type="checkbox" name="ids[]" value="<?= $scan['id'] ?>" form="bulk-<?= $id ?>" aria-label="<?= esc($scan['original_name'], 'attr') ?> auswählen"></td>
+                        <td class="col-check"><input type="checkbox" name="ids[]" value="<?= esc($scan['public_id']) ?>" form="bulk-<?= esc($account['public_id']) ?>" aria-label="<?= esc($scan['original_name'], 'attr') ?> auswählen"></td>
                         <td class="col-thumb">
-                            <a href="/scans/<?= $scan['id'] ?>/view" target="_blank" rel="noopener">
-                                <?php if ($scan['has_thumbnail']): ?><img src="/scans/<?= $scan['id'] ?>/thumbnail" alt="" loading="lazy"><?php else: ?><span class="type"><?= esc(strtoupper($scan['file_ext'] ?? 'pdf')) ?></span><?php endif ?>
+                            <a href="/scans/<?= esc($scan['public_id']) ?>/view" target="_blank" rel="noopener">
+                                <?php if ($scan['has_thumbnail']): ?><img src="/scans/<?= esc($scan['public_id']) ?>/thumbnail" alt="" loading="lazy"><?php else: ?><span class="type"><?= esc(strtoupper($scan['file_ext'] ?? 'pdf')) ?></span><?php endif ?>
                             </a>
                         </td>
-                        <td><a class="name" href="/scans/<?= $scan['id'] ?>/view" target="_blank" rel="noopener" title="<?= esc($scan['original_name'], 'attr') ?>"><?= esc($scan['original_name']) ?></a></td>
+                        <td><a class="name" href="/scans/<?= esc($scan['public_id']) ?>/view" target="_blank" rel="noopener" title="<?= esc($scan['original_name'], 'attr') ?>"><?= esc($scan['original_name']) ?></a></td>
                         <td><?= esc(date('d.m.Y H:i', strtotime($scan['received_at']))) ?></td>
                         <td class="col-size"><?= number_to_size($scan['size'], 1, 'de') ?></td>
                         <td class="col-actions">
-                            <a class="button small" href="/scans/<?= $scan['id'] ?>/download">Herunterladen</a>
-                            <?= form_open('scans/' . $scan['id'] . '/delete', ['class' => 'inline', 'onsubmit' => "return confirm('Scan wirklich löschen?')"]) ?>
+                            <a class="button small" href="/scans/<?= esc($scan['public_id']) ?>/download">Herunterladen</a>
+                            <?= form_open('scans/' . $scan['public_id'] . '/delete', ['class' => 'inline', 'onsubmit' => "return confirm('Scan wirklich löschen?')"]) ?>
                                 <button class="button small danger">Löschen</button>
                             <?= form_close() ?>
                         </td>

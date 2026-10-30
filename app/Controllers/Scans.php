@@ -27,7 +27,7 @@ class Scans extends BaseController
         $sections = [];
         $scans    = model(ScanModel::class);
         foreach ($accounts as $account) {
-            $group      = 'a' . $account['id'];
+            $group      = 'a' . $account['public_id'];
             $sections[] = [
                 'account' => $account,
                 'scans'   => $scans->where('tenant_id', $tenant['id'])->where('ftp_account_id', $account['id'])
@@ -78,8 +78,8 @@ class Scans extends BaseController
     {
         $user    = $this->currentUser();
         $data    = (array) $this->request->getJSON(true);
-        $account = (int) ($data['account'] ?? 0);
-        if (! in_array($account, service('scanAccess')->visibleAccountIds($this->tenant(), $user), true)) {
+        $account = $this->publicAccountMap(service('scanAccess')->visibleAccountIds($this->tenant(), $user))[(string) ($data['account'] ?? '')] ?? null;
+        if ($account === null) {
             return $this->response->setStatusCode(404)->setJSON(['ok' => false]);
         }
 
@@ -99,42 +99,44 @@ class Scans extends BaseController
     {
         $user    = $this->currentUser();
         $visible = service('scanAccess')->visibleAccountIds($this->tenant(), $user);
-        $ids     = array_map('intval', (array) ($this->request->getJSON(true)['collapsed'] ?? []));
-        $ids     = array_values(array_unique(array_intersect($ids, $visible)));
+        $map     = $this->publicAccountMap($visible);
+        $ids     = array_values(array_unique(array_filter(array_map(
+            static fn ($publicId) => $map[(string) $publicId] ?? null,
+            (array) ($this->request->getJSON(true)['collapsed'] ?? [])
+        ))));
 
         model(UserModel::class)->update($user['id'], ['collapsed_accounts' => json_encode($ids)]);
 
         return $this->response->setJSON(['ok' => true]);
     }
 
-    public function view(int $id): ResponseInterface
+    public function view(string $id): ResponseInterface
     {
         $scan = $this->findScan($id);
 
-        return $this->sendFile($scan, service('scanStore')->viewPath($scan), 'inline');
+        return $this->sendFile($scan, service('scanStore')->viewFile($scan), true);
     }
 
-    public function download(int $id): ResponseInterface
+    public function download(string $id): ResponseInterface
     {
         $scan = $this->findScan($id);
 
-        return $this->sendFile($scan, service('scanStore')->filePath($scan), 'attachment');
+        return $this->sendFile($scan, service('scanStore')->originalFile($scan), false);
     }
 
-    public function thumbnail(int $id): ResponseInterface
+    public function thumbnail(string $id): ResponseInterface
     {
-        $scan = $this->findScan($id);
-        $path = service('scanStore')->thumbnailPath($scan);
-        if (! is_file($path)) {
+        $data = service('scanStore')->thumbnailData($this->findScan($id));
+        if ($data === null) {
             throw PageNotFoundException::forPageNotFound();
         }
 
         return $this->response->setHeader('Content-Type', 'image/png')
             ->setHeader('Cache-Control', 'private, max-age=86400')
-            ->setBody(file_get_contents($path));
+            ->setBody($data);
     }
 
-    public function delete(int $id): ResponseInterface
+    public function delete(string $id): ResponseInterface
     {
         service('scanStore')->delete($this->findScan($id));
 
@@ -147,7 +149,7 @@ class Scans extends BaseController
      */
     public function deleteSelected(): ResponseInterface
     {
-        $ids = array_unique(array_map('intval', (array) $this->request->getPost('ids')));
+        $ids = array_unique(array_filter(array_map('strval', (array) $this->request->getPost('ids'))));
         if ($ids === []) {
             return redirect()->back()->with('warning', 'Es wurden keine Scans ausgewählt.');
         }
@@ -157,7 +159,7 @@ class Scans extends BaseController
         $store  = service('scanStore');
         $access = service('scanAccess');
         $count  = 0;
-        foreach (model(ScanModel::class)->whereIn('id', array_slice($ids, 0, 500))->findAll() as $scan) {
+        foreach (model(ScanModel::class)->whereIn('public_id', array_slice($ids, 0, 500))->findAll() as $scan) {
             if ($access->canAccessScan($tenant, $user, $scan)) {
                 $store->delete($scan);
                 $count++;
@@ -167,9 +169,26 @@ class Scans extends BaseController
         return redirect()->back()->with('notice', $count === 1 ? '1 Scan wurde gelöscht.' : $count . ' Scans wurden gelöscht.');
     }
 
-    private function findScan(int $id): array
+    /**
+     * Maps public IDs of the given accounts to their database IDs.
+     *
+     * @param list<int> $accountIds
+     *
+     * @return array<string, int>
+     */
+    private function publicAccountMap(array $accountIds): array
     {
-        $scan = model(ScanModel::class)->find($id);
+        if ($accountIds === []) {
+            return [];
+        }
+        $rows = model(FtpAccountModel::class)->select('id, public_id')->whereIn('id', $accountIds)->findAll();
+
+        return array_map('intval', array_column($rows, 'id', 'public_id'));
+    }
+
+    private function findScan(string $publicId): array
+    {
+        $scan = model(ScanModel::class)->where('public_id', $publicId)->first();
         if ($scan === null || ! service('scanAccess')->canAccessScan($this->tenant(), $this->currentUser(), $scan)) {
             throw PageNotFoundException::forPageNotFound();
         }
@@ -177,22 +196,29 @@ class Scans extends BaseController
         return $scan;
     }
 
-    private function sendFile(array $scan, string $path, string $disposition): ResponseInterface
+    /**
+     * Streams a stored file. Encrypted files are decrypted into RAM first and
+     * the copy is removed once the response has been sent.
+     *
+     * @param array{path: string, mime: string, name: string} $file
+     */
+    private function sendFile(array $scan, array $file, bool $inline): ResponseInterface
     {
-        if (! is_file($path)) {
+        if (! is_file($file['path'])) {
             throw PageNotFoundException::forPageNotFound();
         }
-        $name = preg_replace('/[^\w.\- ]+/u', '_', $scan['original_name']);
-        if (str_ends_with($path, '.view.pdf')) {
-            $name = pathinfo($name, PATHINFO_FILENAME) . '.pdf';
+        $plain = service('scanStore')->plaintext($scan, $file['path']);
+        if ($plain['cleanup'] !== null) {
+            register_shutdown_function([\App\Libraries\FileCrypto::class, 'removeDirectory'], $plain['cleanup']);
         }
 
-        return $this->response
-            ->setHeader('Content-Type', \App\Libraries\ScanStore::mimeType($path))
+        $name     = preg_replace('/[\x00-\x1F\/\\\\"]+/u', '_', $file['name']);
+        $response = $this->response->download($plain['path'], null)
+            ->setFileName($name)
+            ->setContentType($file['mime'], '')
             ->setHeader('X-Content-Type-Options', 'nosniff')
-            ->setHeader('Content-Disposition', $disposition . '; filename="' . addcslashes($name, '"\\') . '"; filename*=UTF-8\'\'' . rawurlencode($scan['original_name']))
-            ->setHeader('Content-Length', (string) filesize($path))
-            ->setHeader('Cache-Control', 'private, no-store')
-            ->setBody(file_get_contents($path));
+            ->setHeader('Cache-Control', 'private, no-store');
+
+        return $inline ? $response->inline() : $response;
     }
 }

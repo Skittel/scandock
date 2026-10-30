@@ -9,8 +9,9 @@ use App\Models\TenantModel;
 use Config\ScanKai;
 
 /**
- * Checks uploaded files, moves them into storage, renders thumbnails and
- * deletes scans. Rejected files are deleted and logged with the reason.
+ * Checks uploaded files, stores them encrypted (one key per tenant), renders
+ * thumbnails and deletes scans. Rejected files are deleted and logged with
+ * the reason.
  */
 class ScanStore
 {
@@ -18,25 +19,52 @@ class ScanStore
     {
     }
 
+    /**
+     * Stored original. Encrypted files carry the suffix ".enc".
+     */
     public function filePath(array $scan): string
     {
-        return $this->tenantDirectory((int) $scan['tenant_id']) . '/' . $scan['stored_name'] . '.' . ($scan['file_ext'] ?? 'pdf');
+        return $this->basePath($scan) . '.' . ($scan['file_ext'] ?? 'pdf') . $this->suffix($scan);
+    }
+
+    public function thumbnailPath(array $scan): string
+    {
+        return $this->basePath($scan) . '.thumb.png' . $this->suffix($scan);
     }
 
     /**
-     * File to show in the browser: the original, or a PDF rendition for TIFF
-     * (most browsers cannot display TIFF).
+     * PDF rendition of a TIFF (most browsers cannot display TIFF).
      */
-    public function viewPath(array $scan): string
+    public function tiffViewPath(array $scan): string
     {
-        $view = $this->tenantDirectory((int) $scan['tenant_id']) . '/' . $scan['stored_name'] . '.view.pdf';
-
-        return ($scan['file_ext'] ?? 'pdf') === 'tif' && is_file($view) ? $view : $this->filePath($scan);
+        return $this->basePath($scan) . '.view.pdf' . $this->suffix($scan);
     }
 
-    public static function mimeType(string $path): string
+    /**
+     * Content type and download name of the file shown in the browser.
+     *
+     * @return array{path: string, mime: string, name: string}
+     */
+    public function viewFile(array $scan): array
     {
-        return match (strtolower(pathinfo($path, PATHINFO_EXTENSION))) {
+        if (($scan['file_ext'] ?? 'pdf') === 'tif' && is_file($this->tiffViewPath($scan))) {
+            return ['path' => $this->tiffViewPath($scan), 'mime' => 'application/pdf', 'name' => pathinfo($scan['original_name'], PATHINFO_FILENAME) . '.pdf'];
+        }
+
+        return $this->originalFile($scan);
+    }
+
+    /**
+     * @return array{path: string, mime: string, name: string}
+     */
+    public function originalFile(array $scan): array
+    {
+        return ['path' => $this->filePath($scan), 'mime' => self::mimeType($scan['file_ext'] ?? 'pdf'), 'name' => $scan['original_name']];
+    }
+
+    public static function mimeType(string $ext): string
+    {
+        return match ($ext) {
             'jpg'   => 'image/jpeg',
             'png'   => 'image/png',
             'tif'   => 'image/tiff',
@@ -44,9 +72,84 @@ class ScanStore
         };
     }
 
-    public function thumbnailPath(array $scan): string
+    /**
+     * Returns a readable plaintext copy of a stored file: the file itself if
+     * it is not encrypted, otherwise a decrypted copy in RAM. The caller must
+     * pass the returned directory (if any) to FileCrypto::removeDirectory().
+     *
+     * @return array{path: string, cleanup: ?string}
+     */
+    public function plaintext(array $scan, string $storedPath): array
     {
-        return $this->tenantDirectory((int) $scan['tenant_id']) . '/' . $scan['stored_name'] . '.thumb.png';
+        if (empty($scan['encrypted'])) {
+            return ['path' => $storedPath, 'cleanup' => null];
+        }
+        $dir    = FileCrypto::ramDirectory();
+        $target = $dir . '/file';
+        FileCrypto::decryptFile($storedPath, $this->key($scan), $target);
+
+        return ['path' => $target, 'cleanup' => $dir];
+    }
+
+    /**
+     * Thumbnail as PNG bytes, or null if there is none.
+     */
+    public function thumbnailData(array $scan): ?string
+    {
+        $path = $this->thumbnailPath($scan);
+        if (! is_file($path)) {
+            return null;
+        }
+
+        return empty($scan['encrypted']) ? file_get_contents($path) : FileCrypto::decryptFile($path, $this->key($scan));
+    }
+
+    /**
+     * Encrypts the files of a scan that was stored before encryption existed.
+     */
+    public function encryptExisting(array $scan): bool
+    {
+        if (! empty($scan['encrypted'])) {
+            return false;
+        }
+        $key       = $this->key($scan);
+        $encrypted = $scan + ['encrypted' => 1];
+        $encrypted['encrypted'] = 1;
+        $pairs = [[$this->filePath($scan), $this->filePath($encrypted)], [$this->thumbnailPath($scan), $this->thumbnailPath($encrypted)], [$this->tiffViewPath($scan), $this->tiffViewPath($encrypted)]];
+
+        foreach ($pairs as [$plain, $cipher]) {
+            if (is_file($plain)) {
+                FileCrypto::encryptFile($plain, $cipher, $key);
+                chmod($cipher, 0640);
+            }
+        }
+
+        // Verify the encrypted original before the plain files are removed.
+        $work = FileCrypto::ramDirectory();
+        try {
+            FileCrypto::decryptFile($this->filePath($encrypted), $key, $work . '/check');
+            if (! hash_equals($scan['sha256'], hash_file('sha256', $work . '/check'))) {
+                throw new \RuntimeException('Checksum mismatch after encryption.');
+            }
+        } catch (\Throwable $e) {
+            foreach ($pairs as [, $cipher]) {
+                @unlink($cipher);
+            }
+            log_message('error', 'Encrypting scan {id} failed: {msg}', ['id' => $scan['id'], 'msg' => $e->getMessage()]);
+
+            return false;
+        } finally {
+            FileCrypto::removeDirectory($work);
+        }
+
+        model(ScanModel::class)->update($scan['id'], ['encrypted' => 1]);
+        foreach ($pairs as [$plain]) {
+            if (is_file($plain)) {
+                unlink($plain);
+            }
+        }
+
+        return true;
     }
 
     /**
@@ -142,9 +245,14 @@ class ScanStore
 
     public function delete(array $scan): void
     {
-        @unlink($this->filePath($scan));
-        @unlink($this->thumbnailPath($scan));
-        @unlink($this->tenantDirectory((int) $scan['tenant_id']) . '/' . $scan['stored_name'] . '.view.pdf');
+        // Remove plain and encrypted variants alike.
+        foreach ([0, 1] as $encrypted) {
+            $variant = ['encrypted' => $encrypted] + $scan;
+            $variant['encrypted'] = $encrypted;
+            @unlink($this->filePath($variant));
+            @unlink($this->thumbnailPath($variant));
+            @unlink($this->tiffViewPath($variant));
+        }
         model(ScanModel::class)->delete($scan['id']);
     }
 
@@ -168,6 +276,7 @@ class ScanStore
             'original_name'  => mb_substr($name, 0, 255),
             'stored_name'    => $storedName,
             'file_ext'       => $type,
+            'encrypted'      => 1,
             'size'           => filesize($path),
             'sha256'         => hash_file('sha256', $path),
             'has_thumbnail'  => 0,
@@ -179,22 +288,37 @@ class ScanStore
             mkdir($dir, 0750, true);
         }
 
-        // Copy first and remove the upload only after the record exists, so
-        // a failure never loses a scan. Copying also makes www-data the owner.
-        $target = $this->filePath($scan);
-        $umask  = umask(0027);
-        $copied = copy($path, $target);
-        if ($copied && $type === 'tif') {
-            $this->renderTiffView($target, substr($target, 0, -4) . '.view.pdf');
-        }
-        umask($umask);
-        if (! $copied) {
-            log_message('error', 'Could not copy upload {file}', ['file' => $path]);
+        // Thumbnail and TIFF rendition are created in RAM and only written to
+        // disk encrypted. The upload is removed only after the record exists,
+        // so a failure never loses a scan.
+        $work = FileCrypto::ramDirectory();
+        try {
+            $key   = $this->key($scan);
+            $thumb = $work . '/thumb.png';
+            $scan['has_thumbnail'] = $this->renderThumbnail($path, $type, $thumb) ? 1 : 0;
+
+            $files = [[$path, $this->filePath($scan)]];
+            if ($scan['has_thumbnail'] === 1) {
+                $files[] = [$thumb, $this->thumbnailPath($scan)];
+            }
+            if ($type === 'tif' && $this->renderTiffView($path, $work . '/view.pdf')) {
+                $files[] = [$work . '/view.pdf', $this->tiffViewPath($scan)];
+            }
+            foreach ($files as [$plain, $cipher]) {
+                FileCrypto::encryptFile($plain, $cipher, $key);
+                chmod($cipher, 0640);
+            }
+        } catch (\Throwable $e) {
+            log_message('error', 'Could not store upload {file}: {msg}', ['file' => $path, 'msg' => $e->getMessage()]);
+            foreach ($files ?? [] as [, $cipher]) {
+                @unlink($cipher);
+            }
 
             return false;
+        } finally {
+            FileCrypto::removeDirectory($work);
         }
 
-        $scan['has_thumbnail'] = $this->renderThumbnail($target, $type, $this->thumbnailPath($scan)) ? 1 : 0;
         model(ScanModel::class)->insert($scan);
         unlink($path);
 
@@ -247,7 +371,7 @@ class ScanStore
      * keeps the original compression (e.g. CCITT G4); ImageMagick is the
      * fallback for TIFFs it cannot handle (e.g. 16 bits per sample).
      */
-    private function renderTiffView(string $tiff, string $pdf): void
+    private function renderTiffView(string $tiff, string $pdf): bool
     {
         exec(sprintf('timeout 60 tiff2pdf -o %s %s >/dev/null 2>&1', escapeshellarg($pdf), escapeshellarg($tiff)), $out, $code);
         if ($code !== 0 || ! is_file($pdf) || filesize($pdf) < 100) {
@@ -260,7 +384,31 @@ class ScanStore
         if ($code !== 0) {
             @unlink($pdf);
             log_message('warning', 'Could not create PDF view of {file}', ['file' => $tiff]);
+
+            return false;
         }
+
+        return true;
+    }
+
+    private function basePath(array $scan): string
+    {
+        return $this->tenantDirectory((int) $scan['tenant_id']) . '/' . $scan['stored_name'];
+    }
+
+    private function suffix(array $scan): string
+    {
+        return empty($scan['encrypted']) ? '' : '.enc';
+    }
+
+    /**
+     * Per-tenant file key, cached for the duration of the request.
+     */
+    private function key(array $scan): string
+    {
+        static $keys = [];
+
+        return $keys[(int) $scan['tenant_id']] ??= model(TenantModel::class)->storageKey((int) $scan['tenant_id']);
     }
 
     private function tenantDirectory(int $tenantId): string

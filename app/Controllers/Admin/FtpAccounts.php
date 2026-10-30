@@ -38,12 +38,12 @@ class FtpAccounts extends BaseController
         $visibility = $this->request->getPost('visibility') === 'public' ? 'public' : 'private';
         $account    = service('ftpAccountManager')->create($this->tenant(), $label, $visibility);
 
-        return redirect()->to('admin/ftp/' . $account['id'])
+        return redirect()->to('admin/ftp/' . $account['public_id'])
             ->with('notice', 'Das FTP-Konto wurde angelegt.')
-            ->with('reveal_password', (int) $account['id']);
+            ->with('reveal_password', $account['public_id']);
     }
 
-    public function show(int $id): string
+    public function show(string $id): string
     {
         $account = $this->findAccount($id);
         $config  = config('ScanKai');
@@ -51,15 +51,15 @@ class FtpAccounts extends BaseController
         return $this->render('admin/ftp_show', [
             'account'  => $account,
             // The password is shown in plain text only right after it was created.
-            'password' => (int) session()->getFlashdata('reveal_password') === $id ? FtpAccountModel::plainPassword($account) : null,
-            'members'  => model(FtpAccountMemberModel::class)->forAccount($id),
+            'password' => session()->getFlashdata('reveal_password') === $id ? FtpAccountModel::plainPassword($account) : null,
+            'members'  => model(FtpAccountMemberModel::class)->forAccount((int) $account['id']),
             'host'     => $config->ftpHost,
             'port'     => $config->ftpPort,
             'tlsPort'  => $config->ftpImplicitTlsPort,
         ]);
     }
 
-    public function regeneratePassword(int $id): ResponseInterface
+    public function regeneratePassword(string $id): ResponseInterface
     {
         service('ftpAccountManager')->regeneratePassword($this->findAccount($id));
 
@@ -71,7 +71,7 @@ class FtpAccounts extends BaseController
     /**
      * Returns the plain password on request (eye icon on the account page).
      */
-    public function revealPassword(int $id): ResponseInterface
+    public function revealPassword(string $id): ResponseInterface
     {
         $account = $this->findAccount($id);
 
@@ -80,35 +80,35 @@ class FtpAccounts extends BaseController
             ->setJSON(['password' => FtpAccountModel::plainPassword($account)]);
     }
 
-    public function toggle(int $id): ResponseInterface
+    public function toggle(string $id): ResponseInterface
     {
         $account = $this->findAccount($id);
-        model(FtpAccountModel::class)->update($id, ['active' => $account['active'] ? 0 : 1]);
+        model(FtpAccountModel::class)->update($account['id'], ['active' => $account['active'] ? 0 : 1]);
 
         return redirect()->to('admin/ftp/' . $id)->with('notice', $account['active'] ? 'Konto gesperrt.' : 'Konto aktiviert.');
     }
 
-    public function visibility(int $id): ResponseInterface
+    public function visibility(string $id): ResponseInterface
     {
-        $this->findAccount($id);
+        $account    = $this->findAccount($id);
         $visibility = $this->request->getPost('visibility') === 'public' ? 'public' : 'private';
-        model(FtpAccountModel::class)->update($id, ['visibility' => $visibility]);
+        model(FtpAccountModel::class)->update($account['id'], ['visibility' => $visibility]);
 
         return redirect()->to('admin/ftp/' . $id)->with('notice', $visibility === 'public'
             ? 'Das Konto ist jetzt öffentlich: Alle Benutzer sehen die Scans.'
             : 'Das Konto ist jetzt privat: Nur die eingetragenen Personen und Gruppen sehen die Scans.');
     }
 
-    public function delete(int $id): ResponseInterface
+    public function delete(string $id): ResponseInterface
     {
         service('ftpAccountManager')->delete($this->findAccount($id));
 
         return redirect()->to('admin/ftp')->with('notice', 'Das FTP-Konto und seine Scans wurden gelöscht.');
     }
 
-    public function addMember(int $id): ResponseInterface
+    public function addMember(string $id): ResponseInterface
     {
-        $this->findAccount($id);
+        $account = $this->findAccount($id);
         $type  = (string) $this->request->getPost('member_type');
         $ref   = strtolower(trim((string) $this->request->getPost('member_ref')));
         $label = trim((string) $this->request->getPost('label'));
@@ -129,10 +129,10 @@ class FtpAccounts extends BaseController
         }
 
         $members = model(FtpAccountMemberModel::class);
-        $exists  = $members->where(['ftp_account_id' => $id, 'member_type' => $type, 'member_ref' => $ref])->countAllResults() > 0;
+        $exists  = $members->where(['ftp_account_id' => $account['id'], 'member_type' => $type, 'member_ref' => $ref])->countAllResults() > 0;
         if (! $exists) {
             $members->insert([
-                'ftp_account_id' => $id,
+                'ftp_account_id' => $account['id'],
                 'member_type'    => $type,
                 'member_ref'     => $ref,
                 'label'          => mb_substr($label !== '' ? $label : $ref, 0, 190),
@@ -142,15 +142,15 @@ class FtpAccounts extends BaseController
         return redirect()->to('admin/ftp/' . $id)->with('notice', 'Berechtigung hinzugefügt.');
     }
 
-    public function removeMember(int $id, int $memberId): ResponseInterface
+    public function removeMember(string $id, string $memberId): ResponseInterface
     {
-        $this->findAccount($id);
-        model(FtpAccountMemberModel::class)->where('ftp_account_id', $id)->delete($memberId);
+        $account = $this->findAccount($id);
+        model(FtpAccountMemberModel::class)->where('ftp_account_id', $account['id'])->where('public_id', $memberId)->delete();
 
         return redirect()->to('admin/ftp/' . $id)->with('notice', 'Berechtigung entfernt.');
     }
 
-    private function findAccount(int $id): array
+    private function findAccount(string $id): array
     {
         $account = model(FtpAccountModel::class)->findForTenant((int) $this->tenant()['id'], $id);
         if ($account === null) {

@@ -14,7 +14,7 @@ class TenantModel extends Model
     protected $useTimestamps  = true;
     protected $allowedFields  = [
         'slug', 'name', 'logo_file', 'status', 'setup_token_hash', 'setup_token_encrypted', 'entra_tenant_id', 'entra_client_id',
-        'entra_client_secret', 'entra_secret_expires_at', 'admin_group_id', 'retention_days',
+        'entra_client_secret', 'entra_secret_expires_at', 'storage_key', 'admin_group_id', 'retention_days',
     ];
 
     public function findBySlug(string $slug): ?array
@@ -113,6 +113,22 @@ class TenantModel extends Model
         }
 
         return null;
+    }
+
+    /**
+     * Returns the tenant's file encryption key (32 bytes), creating it on
+     * first use. Concurrent first uses agree on one key.
+     */
+    public function storageKey(int $tenantId): string
+    {
+        $stored = $this->select('storage_key')->find($tenantId)['storage_key'] ?? null;
+        if (empty($stored)) {
+            $this->builder()->where('id', $tenantId)->where('storage_key', null)
+                ->update(['storage_key' => self::encryptSecret(\App\Libraries\FileCrypto::generateKey())]);
+            $stored = $this->select('storage_key')->find($tenantId)['storage_key'];
+        }
+
+        return service('encrypter')->decrypt(base64_decode($stored, true));
     }
 
     public static function encryptSecret(string $secret): string

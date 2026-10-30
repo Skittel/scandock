@@ -30,6 +30,10 @@ the scans. Scans are deleted automatically after a configurable number of days
 - Customer logo and company name in the header (set by admins)
 - Placeholder with file name and status while an upload is running or being
   processed; the scan page refreshes itself
+- Scans, thumbnails and TIFF renditions are encrypted at rest (libsodium
+  secretstream, one key per tenant, keys wrapped with the app key); plaintext
+  intermediates only in RAM (/dev/shm)
+- Random public IDs in all URLs (no database IDs)
 - PDF thumbnails, inline preview, download, delete
 - Automatic deletion after the retention period
 - Warning for admins 30 days before the Entra client secret expires; admins
@@ -52,6 +56,7 @@ scankai tenant:status <slug> disable|enable
 scankai scans:ingest                             # run by the upload watcher (inotify) right
                                                  # after each upload, timer every 20 s as fallback
 scankai scans:purge                              # run by systemd timer daily
+scankai scans:encrypt                            # encrypt scans stored before 0.0.18
 ```
 
 The static landing page for the base domain and `www` lives in [`landing/`](landing/).

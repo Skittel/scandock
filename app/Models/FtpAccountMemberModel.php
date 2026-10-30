@@ -13,10 +13,16 @@ class FtpAccountMemberModel extends Model
     protected $returnType    = 'array';
     protected $useTimestamps = true;
     protected $updatedField  = '';
-    protected $allowedFields = ['ftp_account_id', 'member_type', 'member_ref', 'label'];
+    protected $beforeInsert  = ['assignPublicId'];
+    protected $allowedFields = ['public_id', 'ftp_account_id', 'member_type', 'member_ref', 'label'];
 
     public function forAccount(int $accountId): array
     {
         return $this->where('ftp_account_id', $accountId)->orderBy('member_type')->orderBy('label')->findAll();
+    }
+
+    protected function assignPublicId(array $data): array
+    {
+        return \App\Libraries\PublicId::assign($data);
     }
 }

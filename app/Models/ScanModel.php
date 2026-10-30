@@ -13,8 +13,14 @@ class ScanModel extends Model
     protected $returnType    = 'array';
     protected $useTimestamps = true;
     protected $updatedField  = '';
-    protected $allowedFields = [
-        'tenant_id', 'ftp_account_id', 'original_name', 'stored_name', 'file_ext', 'size', 'sha256',
+    protected $beforeInsert  = ['assignPublicId'];
+    protected $allowedFields = ['public_id', 
+        'tenant_id', 'ftp_account_id', 'original_name', 'stored_name', 'file_ext', 'encrypted', 'size', 'sha256',
         'has_thumbnail', 'received_at',
     ];
+
+    protected function assignPublicId(array $data): array
+    {
+        return \App\Libraries\PublicId::assign($data);
+    }
 }

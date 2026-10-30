@@ -19,7 +19,7 @@
     <tbody>
     <?php foreach ($accounts as $account): ?>
         <tr>
-            <td><a href="/admin/ftp/<?= $account['id'] ?>"><?= esc($account['label']) ?></a></td>
+            <td><a href="/admin/ftp/<?= esc($account['public_id']) ?>"><?= esc($account['label']) ?></a></td>
             <td><?= $account['visibility'] === 'public' ? 'öffentlich' : 'privat' ?></td>
             <td><code><?= esc($account['username']) ?></code></td>
             <td><?= $account['active'] ? 'aktiv' : '<span class="muted">gesperrt</span>' ?></td>
