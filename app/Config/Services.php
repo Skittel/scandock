@@ -84,6 +84,15 @@ class Services extends BaseService
         return new \App\Libraries\GroupSync();
     }
 
+    public static function tenantBranding(bool $getShared = true): \App\Libraries\TenantBranding
+    {
+        if ($getShared) {
+            return static::getSharedInstance('tenantBranding');
+        }
+
+        return new \App\Libraries\TenantBranding(config(ScanKai::class));
+    }
+
     public static function scanAccess(bool $getShared = true): \App\Libraries\ScanAccess
     {
         if ($getShared) {

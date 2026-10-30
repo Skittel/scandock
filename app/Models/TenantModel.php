@@ -13,7 +13,7 @@ class TenantModel extends Model
     protected $returnType     = 'array';
     protected $useTimestamps  = true;
     protected $allowedFields  = [
-        'slug', 'name', 'status', 'setup_token_hash', 'setup_token_encrypted', 'entra_tenant_id', 'entra_client_id',
+        'slug', 'name', 'logo_file', 'status', 'setup_token_hash', 'setup_token_encrypted', 'entra_tenant_id', 'entra_client_id',
         'entra_client_secret', 'entra_secret_expires_at', 'admin_group_id', 'retention_days',
     ];
 

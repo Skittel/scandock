@@ -13,7 +13,15 @@
 </head>
 <body>
 <header class="topbar">
-    <a class="brand" href="/"><img src="/logo-scankai.svg" alt="ScanKai"><?php if (! empty($tenant['name'])): ?> <span><?= esc($tenant['name']) ?></span><?php endif ?></a>
+    <a class="brand" href="/">
+        <img src="/logo-scankai.svg" alt="ScanKai">
+        <?php if (! empty($tenant['name'])): ?>
+            <span class="tenant">
+                <?php if (! empty($tenant['logo_file'])): ?><img src="/branding/logo?v=<?= esc($tenant['logo_file'], 'url') ?>" alt=""><?php endif ?>
+                <?= esc($tenant['name']) ?>
+            </span>
+        <?php endif ?>
+    </a>
     <?php if (! empty($user)): ?>
     <nav>
         <a href="/scans">Scans</a>

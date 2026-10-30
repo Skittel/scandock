@@ -22,6 +22,7 @@ the scans. Scans are deleted automatically after a configurable number of days
 - FTP accounts are public (all users see the scans) or private (only assigned
   persons and Entra groups, with directory autocomplete); admin rights do not
   grant access to private scans
+- Customer logo and company name in the header (set by admins)
 - PDF thumbnails, inline preview, download, delete
 - Automatic deletion after the retention period
 - Warning for admins 30 days before the Entra client secret expires; admins
@@ -39,6 +40,7 @@ scankai tenant:create <slug> --name "Customer"   # vhost + certificate + start l
 scankai tenant:link <slug>                       # show current start link
 scankai tenant:link-renew <slug>                 # new start link (tenant stays active)
 scankai tenant:list
+scankai tenant:rename <slug> "Display name"
 scankai tenant:status <slug> disable|enable
 scankai scans:ingest                             # run by systemd timer every 20 s
 scankai scans:purge                              # run by systemd timer daily

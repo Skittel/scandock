@@ -98,6 +98,36 @@ class Settings extends BaseController
     }
 
     /**
+     * Saves the display name and, if given, a new logo.
+     */
+    public function saveBranding(): ResponseInterface
+    {
+        $tenant = $this->tenant();
+        $name   = trim((string) $this->request->getPost('name'));
+        if ($name === '' || mb_strlen($name) > 190) {
+            return redirect()->to('admin/settings#branding')->withInput()->with('error', 'Bitte einen Firmennamen mit höchstens 190 Zeichen angeben.');
+        }
+        model(TenantModel::class)->update($tenant['id'], ['name' => $name]);
+
+        $file = $this->request->getFile('logo');
+        if ($file !== null && $file->getError() !== UPLOAD_ERR_NO_FILE) {
+            $error = service('tenantBranding')->store($tenant, $file);
+            if ($error !== null) {
+                return redirect()->to('admin/settings#branding')->with('error', $error);
+            }
+        }
+
+        return redirect()->to('admin/settings#branding')->with('notice', 'Firmenname und Logo gespeichert.');
+    }
+
+    public function deleteLogo(): ResponseInterface
+    {
+        service('tenantBranding')->delete($this->tenant());
+
+        return redirect()->to('admin/settings#branding')->with('notice', 'Das Logo wurde entfernt.');
+    }
+
+    /**
      * Replaces the Entra client secret after checking it with Microsoft.
      */
     public function renewSecret(): ResponseInterface

@@ -6,6 +6,7 @@ use CodeIgniter\Router\RouteCollection;
  * @var RouteCollection $routes
  */
 $routes->get('/', 'Home::index');
+$routes->get('branding/logo', 'Branding::logo', ['filter' => 'tenant:any']);
 
 // Onboarding via start link (initial setup or re-issued link for an active tenant).
 $routes->group('setup', ['filter' => 'tenant:any'], static function ($routes) {
@@ -47,4 +48,6 @@ $routes->group('admin', ['filter' => ['tenant', 'auth', 'admin'], 'namespace' =>
     $routes->get('settings', 'Settings::index');
     $routes->post('settings', 'Settings::save');
     $routes->post('settings/secret', 'Settings::renewSecret');
+    $routes->post('settings/branding', 'Settings::saveBranding');
+    $routes->post('settings/logo/delete', 'Settings::deleteLogo');
 });

@@ -37,9 +37,9 @@
     <h2>Wer sieht die Scans?</h2>
     <?= form_open('admin/ftp/' . $account['id'] . '/visibility', ['class' => 'form']) ?>
         <label class="check"><input type="radio" name="visibility" value="public" <?= $account['visibility'] === 'public' ? 'checked' : '' ?> onchange="this.form.submit()">
-            <strong>Öffentlich</strong> – alle Benutzer sehen die Scans</label>
+            <span><strong>Öffentlich</strong> – alle Benutzer sehen die Scans</span></label>
         <label class="check"><input type="radio" name="visibility" value="private" <?= $account['visibility'] === 'private' ? 'checked' : '' ?> onchange="this.form.submit()">
-            <strong>Privat</strong> – nur die unten eingetragenen Personen und Gruppen sehen die Scans</label>
+            <span><strong>Privat</strong> – nur die unten eingetragenen Personen und Gruppen sehen die Scans</span></label>
         <noscript><button class="button small">Speichern</button></noscript>
     <?= form_close() ?>
 

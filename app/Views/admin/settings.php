@@ -1,6 +1,23 @@
 <?= $this->extend('layouts/main') ?>
 <?= $this->section('content') ?>
 <h1>Einstellungen</h1>
+<section class="card" id="branding">
+    <h2>Firma</h2>
+    <?= form_open_multipart('admin/settings/branding', ['class' => 'form']) ?>
+        <label>Firmenname (Anzeigename)
+            <input name="name" required maxlength="190" value="<?= esc(old('name', $tenant['name']), 'attr') ?>"></label>
+        <label>Logo (PNG, JPG, WebP oder SVG, max. 1 MB)
+            <input type="file" name="logo" accept="image/png,image/jpeg,image/webp,image/svg+xml"></label>
+        <?php if (! empty($tenant['logo_file'])): ?>
+            <div class="logo-preview"><img src="/branding/logo?v=<?= esc($tenant['logo_file'], 'url') ?>" alt="Aktuelles Logo"><span class="hint">Aktuelles Logo – eine neue Datei ersetzt es.</span></div>
+        <?php endif ?>
+        <button class="button">Speichern</button>
+    <?= form_close() ?>
+    <?php if (! empty($tenant['logo_file'])): ?>
+        <?= form_open('admin/settings/logo/delete', ['onsubmit' => "return confirm('Logo entfernen?')"]) ?><button class="button small danger">Logo entfernen</button><?= form_close() ?>
+    <?php endif ?>
+</section>
+
 <section class="card">
     <?= form_open('admin/settings', ['class' => 'form']) ?>
         <label>Admin-Gruppe (Objekt-ID der Entra-Gruppe)

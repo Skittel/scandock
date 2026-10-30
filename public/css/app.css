@@ -6,7 +6,7 @@ code { background:#eef1f6; padding:1px 5px; border-radius:4px; font-size:.92em; 
 .topbar { display:flex; justify-content:space-between; align-items:center; gap:1rem; padding:.7rem 1.5rem; background:#fff; border-bottom:1px solid var(--line); flex-wrap:wrap; }
 .brand { display:flex; align-items:center; gap:.6rem; font-weight:600; font-size:1.05rem; text-decoration:none; color:var(--fg); }
 .brand img { height:34px; width:auto; }
-.brand span { font-weight:400; color:var(--muted); border-left:1px solid var(--line); padding-left:.6rem; }
+
 nav { display:flex; gap:1rem; align-items:center; flex-wrap:wrap; }
 nav a { text-decoration:none; }
 .who { color:var(--muted); }
@@ -27,9 +27,9 @@ button.link { background:none; border:0; color:var(--accent); cursor:pointer; fo
 .inline { display:inline; margin:0; }
 .form label { display:block; margin:.8rem 0; font-weight:600; }
 .form label.check { font-weight:400; }
-.form input:not([type=checkbox]), select { display:block; width:100%; max-width:520px; padding:.5rem .6rem; border:1px solid var(--line); border-radius:6px; font:inherit; margin-top:.25rem; }
+.form input:not([type=checkbox]):not([type=radio]):not([type=file]), select { display:block; width:100%; max-width:520px; padding:.5rem .6rem; border:1px solid var(--line); border-radius:6px; font:inherit; margin-top:.25rem; }
 .form.row, .row { display:flex; gap:.6rem; align-items:center; flex-wrap:wrap; margin:.8rem 0; }
-.form.row input { width:auto; flex:1 1 220px; margin:0; }
+.form.row input:not([type=radio]):not([type=checkbox]) { width:auto; flex:1 1 220px; margin:0; }
 .copy { margin:.3rem 0; }
 .headline { display:flex; justify-content:space-between; align-items:center; gap:1rem; }
 .grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(210px,1fr)); gap:1rem; }
@@ -70,3 +70,10 @@ details.account > summary .title { font-weight:600; }
 details.account > summary .count { margin-left:auto; color:var(--muted); font-size:.9rem; }
 details.account[open] > summary { border-bottom:1px solid var(--line); }
 .account-body { padding:1rem 1.1rem; }
+.form label.check { display:flex; align-items:center; gap:.5rem; font-weight:400; margin:.5rem 0; }
+.form label.check input { margin:0; flex:0 0 auto; }
+.form.row label.check { margin:0; }
+.brand .tenant { display:flex; align-items:center; gap:.6rem; border-left:1px solid var(--line); padding-left:.8rem; font-weight:600; color:var(--fg); }
+.brand .tenant img { height:34px; max-width:160px; object-fit:contain; }
+.logo-preview { display:flex; align-items:center; gap:1rem; margin:.6rem 0; }
+.logo-preview img { max-height:60px; max-width:240px; border:1px solid var(--line); border-radius:6px; padding:6px; background:#fff; }
