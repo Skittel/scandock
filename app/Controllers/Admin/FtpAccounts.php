@@ -38,7 +38,9 @@ class FtpAccounts extends BaseController
         $visibility = $this->request->getPost('visibility') === 'public' ? 'public' : 'private';
         $account    = service('ftpAccountManager')->create($this->tenant(), $label, $visibility);
 
-        return redirect()->to('admin/ftp/' . $account['id'])->with('notice', 'Das FTP-Konto wurde angelegt.');
+        return redirect()->to('admin/ftp/' . $account['id'])
+            ->with('notice', 'Das FTP-Konto wurde angelegt.')
+            ->with('reveal_password', (int) $account['id']);
     }
 
     public function show(int $id): string
@@ -48,7 +50,8 @@ class FtpAccounts extends BaseController
 
         return $this->render('admin/ftp_show', [
             'account'  => $account,
-            'password' => FtpAccountModel::plainPassword($account),
+            // The password is shown in plain text only right after it was created.
+            'password' => (int) session()->getFlashdata('reveal_password') === $id ? FtpAccountModel::plainPassword($account) : null,
             'members'  => model(FtpAccountMemberModel::class)->forAccount($id),
             'host'     => $config->ftpHost,
             'port'     => $config->ftpPort,
@@ -60,7 +63,21 @@ class FtpAccounts extends BaseController
     {
         service('ftpAccountManager')->regeneratePassword($this->findAccount($id));
 
-        return redirect()->to('admin/ftp/' . $id)->with('notice', 'Neues Passwort erzeugt. Bitte am Kopierer eintragen.');
+        return redirect()->to('admin/ftp/' . $id)
+            ->with('notice', 'Neues Passwort erzeugt. Bitte am Kopierer eintragen.')
+            ->with('reveal_password', $id);
+    }
+
+    /**
+     * Returns the plain password on request (eye icon on the account page).
+     */
+    public function revealPassword(int $id): ResponseInterface
+    {
+        $account = $this->findAccount($id);
+
+        return $this->response
+            ->setHeader('Cache-Control', 'no-store')
+            ->setJSON(['password' => FtpAccountModel::plainPassword($account)]);
     }
 
     public function toggle(int $id): ResponseInterface

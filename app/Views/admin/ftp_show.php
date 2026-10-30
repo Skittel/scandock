@@ -9,7 +9,19 @@
         <tr><th>Server</th><td><code><?= esc($host) ?></code></td></tr>
         <tr><th>Port</th><td><code><?= $port ?></code> FTP oder FTPS (explizit, „AUTH TLS“) · <code><?= $tlsPort ?></code> FTPS implizit</td></tr>
         <tr><th>Benutzername</th><td><code><?= esc($account['username']) ?></code></td></tr>
-        <tr><th>Passwort</th><td><code><?= esc($password) ?></code></td></tr>
+        <tr><th>Passwort</th><td>
+            <?php if ($password !== null): ?>
+                <code><?= esc($password) ?></code>
+                <span class="hint warn">Wird nur jetzt im Klartext angezeigt.</span>
+            <?php else: ?>
+                <span class="secret" data-url="<?= esc(site_url('admin/ftp/' . $account['id'] . '/password'), 'attr') ?>">
+                    <code class="secret-value">••••••••</code>
+                    <button type="button" class="icon-button secret-toggle" title="Passwort anzeigen" aria-label="Passwort anzeigen">
+                        <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3" fill="none" stroke="currentColor" stroke-width="2"/><path class="eye-off" d="M3 3l18 18" stroke="currentColor" stroke-width="2" stroke-linecap="round" hidden/></svg>
+                    </button>
+                </span>
+            <?php endif ?>
+        </td></tr>
         <tr><th>Verzeichnis / Pfad</th><td><code>/</code> (leer lassen, falls möglich)</td></tr>
         <tr><th>Modus</th><td>Passiv (PASV)</td></tr>
     </table>
@@ -67,5 +79,6 @@
         <p class="hint">Bei öffentlichen Konten ist keine Zuordnung nötig.<?= $members !== [] ? ' Die bisher eingetragenen ' . count($members) . ' Personen/Gruppen bleiben gespeichert und gelten wieder, wenn das Konto privat wird.' : '' ?></p>
     <?php endif ?>
 </section>
+<script src="/js/secret-reveal.js?v=<?= esc(config('ScanKai')->version) ?>" defer></script>
 <script src="/js/member-picker.js?v=<?= esc(config('ScanKai')->version) ?>" defer></script>
 <?= $this->endSection() ?>

@@ -54,3 +54,6 @@ button.link { background:none; border:0; color:var(--accent); cursor:pointer; fo
 .suggestions li { padding:.45rem .7rem; cursor:pointer; display:flex; flex-direction:column; }
 .suggestions li small { color:var(--muted); }
 .suggestions li:hover, .suggestions li.active { background:#eef4fc; }
+.secret { display:inline-flex; align-items:center; gap:.4rem; }
+.icon-button { display:inline-flex; align-items:center; justify-content:center; width:30px; height:28px; padding:0; border:1px solid var(--line); border-radius:6px; background:#fff; color:var(--muted); cursor:pointer; }
+.icon-button:hover { color:var(--accent); border-color:var(--accent); }

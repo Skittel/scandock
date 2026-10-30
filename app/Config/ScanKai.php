@@ -12,7 +12,7 @@ class ScanKai extends BaseConfig
     /**
      * Application version (major.minor.patch, each 0-999).
      */
-    public string $version = '0.0.6';
+    public string $version = '0.0.7';
 
     /**
      * Domain below which every tenant gets its own subdomain.
