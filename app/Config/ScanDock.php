@@ -12,7 +12,7 @@ class ScanDock extends BaseConfig
     /**
      * Application version (major.minor.patch, each 0-999).
      */
-    public string $version = '0.0.31';
+    public string $version = '0.0.32';
 
     /**
      * Logo and homepage of the operator, shown in the header next to the

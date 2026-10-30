@@ -1,7 +1,7 @@
 <?= $this->extend('layouts/main') ?>
 <?= $this->section('content') ?>
 <h1>FTP-Konten</h1>
-<p class="hint">Jeder Kopierer (oder Standort) erhält ein eigenes FTP-Konto. Über das Konto können ausschließlich PDF-Dateien hochgeladen werden.</p>
+<p class="hint">Jeder Kopierer (oder Standort) erhält ein eigenes FTP-Konto. Über das Konto können nur Scans hochgeladen werden (PDF, JPG, PNG oder TIFF, höchstens 50 MB pro Datei).</p>
 
 <?= form_open('admin/ftp', ['class' => 'form row']) ?>
     <input name="label" required maxlength="190" placeholder="Bezeichnung, z. B. Kopierer Empfang">

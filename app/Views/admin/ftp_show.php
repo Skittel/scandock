@@ -25,7 +25,7 @@
         <tr><th>Verzeichnis / Pfad</th><td><code>/</code> (leer lassen, falls möglich)</td></tr>
         <tr><th>Modus</th><td>Passiv (PASV)</td></tr>
     </table>
-    <p class="hint">Wenn der Kopierer es unterstützt, FTPS verwenden. Unverschlüsseltes FTP überträgt Passwort und Dokumente im Klartext. Das Konto kann nur PDF-Dateien hochladen, aber keine Dateien auflisten, lesen oder löschen.</p>
+    <p class="hint">Wenn der Kopierer es unterstützt, FTPS verwenden. Unverschlüsseltes FTP überträgt Passwort und Dokumente im Klartext. Das Konto kann nur Scans hochladen (PDF, JPG, PNG oder TIFF, höchstens 50 MB), aber keine Dateien auflisten, lesen oder löschen.</p>
     <div class="row">
         <?= form_open('admin/ftp/' . $account['public_id'] . '/password', ['class' => 'inline', 'onsubmit' => "return confirm('Neues Passwort erzeugen? Das alte funktioniert dann nicht mehr.')"]) ?><button class="button small">Neues Passwort</button><?= form_close() ?>
         <?= form_open('admin/ftp/' . $account['public_id'] . '/toggle', ['class' => 'inline']) ?><button class="button small"><?= $account['active'] ? 'Sperren' : 'Aktivieren' ?></button><?= form_close() ?>
