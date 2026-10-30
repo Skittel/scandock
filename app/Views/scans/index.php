@@ -23,6 +23,12 @@
             <span class="count"><?= $section['total'] ?> Scan<?= $section['total'] === 1 ? '' : 's' ?></span>
         </summary>
         <div class="account-body">
+            <?php foreach ($rejected[(int) $account['id']] ?? [] as $rejection): ?>
+                <div class="flash warn rejection">
+                    <strong><?= esc(date('H:i', strtotime($rejection['created_at']))) ?> Uhr – „<?= esc($rejection['original_name']) ?>“ wurde gelöscht:</strong>
+                    <?= esc($rejection['reason']) ?>
+                </div>
+            <?php endforeach ?>
             <?php $waiting = $pending[(int) $account['id']] ?? [] ?>
             <?php if ($section['scans'] === [] && $waiting === []): ?>
                 <p class="muted">Keine Scans vorhanden.</p>
@@ -44,7 +50,7 @@
                         <?php if ($scan['has_thumbnail']): ?>
                             <img src="/scans/<?= $scan['id'] ?>/thumbnail" alt="Vorschau" loading="lazy">
                         <?php else: ?>
-                            <span class="nothumb">PDF</span>
+                            <span class="nothumb"><?= esc(strtoupper($scan['file_ext'] ?? 'pdf')) ?></span>
                         <?php endif ?>
                     </a>
                     <div class="meta">

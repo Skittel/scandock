@@ -4,6 +4,7 @@ namespace App\Controllers;
 
 use App\Models\FtpAccountModel;
 use App\Models\ScanModel;
+use App\Models\ScanRejectionModel;
 use App\Models\UserModel;
 use CodeIgniter\Exceptions\PageNotFoundException;
 use CodeIgniter\HTTP\ResponseInterface;
@@ -39,6 +40,7 @@ class Scans extends BaseController
         return $this->render('scans/index', [
             'sections'  => $sections,
             'pending'   => service('scanStore')->pendingUploads($accountIds),
+            'rejected'  => model(ScanRejectionModel::class)->recentByAccount($accountIds),
             'pager'     => $scans->pager,
             'collapsed' => UserModel::collapsedAccounts($user),
             'expires'   => (int) $tenant['retention_days'],
@@ -60,9 +62,10 @@ class Scans extends BaseController
             ->get()->getRowArray();
 
         $pendingKey = array_map(static fn ($files) => array_map(static fn ($f) => $f['name'] . ':' . $f['state'], $files), $pending);
+        $rejected   = array_map(static fn ($rows) => array_column($rows, 'id'), model(ScanRejectionModel::class)->recentByAccount($accountIds));
 
         return $this->response->setHeader('Cache-Control', 'no-store')->setJSON([
-            'fingerprint' => md5(json_encode([$accountIds, $latest, $pendingKey])),
+            'fingerprint' => md5(json_encode([$accountIds, $latest, $pendingKey, $rejected])),
             'pending'     => array_sum(array_map('count', $pending)),
         ]);
     }
@@ -84,12 +87,16 @@ class Scans extends BaseController
 
     public function view(int $id): ResponseInterface
     {
-        return $this->sendFile($this->findScan($id), 'inline');
+        $scan = $this->findScan($id);
+
+        return $this->sendFile($scan, service('scanStore')->viewPath($scan), 'inline');
     }
 
     public function download(int $id): ResponseInterface
     {
-        return $this->sendFile($this->findScan($id), 'attachment');
+        $scan = $this->findScan($id);
+
+        return $this->sendFile($scan, service('scanStore')->filePath($scan), 'attachment');
     }
 
     public function thumbnail(int $id): ResponseInterface
@@ -122,16 +129,19 @@ class Scans extends BaseController
         return $scan;
     }
 
-    private function sendFile(array $scan, string $disposition): ResponseInterface
+    private function sendFile(array $scan, string $path, string $disposition): ResponseInterface
     {
-        $path = service('scanStore')->filePath($scan);
         if (! is_file($path)) {
             throw PageNotFoundException::forPageNotFound();
         }
         $name = preg_replace('/[^\w.\- ]+/u', '_', $scan['original_name']);
+        if (str_ends_with($path, '.view.pdf')) {
+            $name = pathinfo($name, PATHINFO_FILENAME) . '.pdf';
+        }
 
         return $this->response
-            ->setHeader('Content-Type', 'application/pdf')
+            ->setHeader('Content-Type', \App\Libraries\ScanStore::mimeType($path))
+            ->setHeader('X-Content-Type-Options', 'nosniff')
             ->setHeader('Content-Disposition', $disposition . '; filename="' . addcslashes($name, '"\\') . '"; filename*=UTF-8\'\'' . rawurlencode($scan['original_name']))
             ->setHeader('Content-Length', (string) filesize($path))
             ->setHeader('Cache-Control', 'private, no-store')

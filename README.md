@@ -18,7 +18,12 @@ the scans. Scans are deleted automatically after a configurable number of days
 - Sign-in with Microsoft Entra ID (OpenID Connect, authorization code + PKCE)
 - All users are admins until an Entra admin group is configured
 - FTP accounts per copier: plain FTP, explicit FTPS (port 21) and implicit FTPS
-  (port 990); upload-only (no listing, download, rename or delete), PDF only
+  (port 990); upload-only (no listing, download, rename or delete)
+- Accepted files: PDF, JPEG, PNG, TIFF. Every upload is inspected: content
+  must match the extension, no HTML/script code (also inside compressed PDF
+  streams), no active PDF content (JavaScript, embedded files, launch
+  actions, …), file must be readable. Rejected files are deleted and shown
+  with the reason for one hour
 - FTP accounts are public (all users see the scans) or private (only assigned
   persons and Entra groups, with directory autocomplete); admin rights do not
   grant access to private scans

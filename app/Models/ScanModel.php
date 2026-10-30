@@ -14,7 +14,7 @@ class ScanModel extends Model
     protected $useTimestamps = true;
     protected $updatedField  = '';
     protected $allowedFields = [
-        'tenant_id', 'ftp_account_id', 'original_name', 'stored_name', 'size', 'sha256',
+        'tenant_id', 'ftp_account_id', 'original_name', 'stored_name', 'file_ext', 'size', 'sha256',
         'has_thumbnail', 'received_at',
     ];
 }
