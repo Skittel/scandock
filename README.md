@@ -20,8 +20,9 @@ the scans. Scans are deleted automatically after a configurable number of days
 - FTP accounts per copier: plain FTP, explicit FTPS (port 21) and implicit FTPS
   (port 990); upload-only (no listing, download, rename or delete); max. 50 MB
   per file (larger files are rejected and reported); file names are
-  normalised (only a-z, A-Z, 0-9, max. 20 characters, longer names are cut
-  to 16 characters plus a 4-digit counter, extension max. 4 characters)
+  normalised (umlauts transliterated, e.g. ä → ae, ß → ss; only a-z, A-Z,
+  0-9; max. 30 characters, longer names are cut to 26 characters plus a
+  4-digit counter; extension max. 4 characters)
 - Accepted files: PDF, JPEG, PNG, TIFF. Every upload is inspected: content
   must match the extension, no HTML/script code (also inside compressed PDF
   streams), no active PDF content (JavaScript, embedded files, launch

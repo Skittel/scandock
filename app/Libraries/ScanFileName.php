@@ -9,17 +9,22 @@ use App\Models\ScanModel;
  * characters, markup, path tricks, very long names) reaches the database,
  * the web interface, the journal or downloads.
  *
- * Rules: every character other than a-z, A-Z, 0-9 becomes "_"; the name
- * (without extension) has at most 20 characters – longer names are cut to
- * 16 characters plus a 4-digit counter starting at 0000; the extension is
- * kept (sanitised the same way) and may have at most 4 characters.
+ * Rules: German umlauts and ß are transliterated (ä → ae, ß → ss); every
+ * other character than a-z, A-Z, 0-9 becomes "_"; the name (without
+ * extension) has at most 30 characters – longer names are cut to 26
+ * characters plus a 4-digit counter starting at 0000; the extension is kept
+ * (sanitised the same way) and may have at most 4 characters.
  */
 class ScanFileName
 {
-    public const MAX_BASE    = 20;
-    public const CUT_BASE    = 16;
+    public const MAX_BASE    = 30;
+    public const CUT_BASE    = 26;
     public const MAX_EXT     = 4;
     private const FALLBACK   = 'scan';
+
+    private const TRANSLITERATION = [
+        'ä' => 'ae', 'ö' => 'oe', 'ü' => 'ue', 'Ä' => 'Ae', 'Ö' => 'Oe', 'Ü' => 'Ue', 'ß' => 'ss', 'ẞ' => 'SS',
+    ];
 
     /**
      * Splits and sanitises a name. "ext" keeps its full (sanitised) length,
@@ -69,7 +74,13 @@ class ScanFileName
 
     private static function clean(string $value): string
     {
-        // One underscore per character (also for multi-byte characters).
+        // Umlauts in both composed and decomposed form (e.g. from macOS).
+        if (class_exists(\Normalizer::class)) {
+            $value = \Normalizer::normalize($value, \Normalizer::FORM_C) ?: $value;
+        }
+        $value = strtr($value, self::TRANSLITERATION);
+
+        // One underscore per remaining character (also for multi-byte characters).
         return (string) preg_replace('/[^a-zA-Z0-9]/u', '_', $value);
     }
 
