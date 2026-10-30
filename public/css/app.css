@@ -48,3 +48,9 @@ button.link { background:none; border:0; color:var(--accent); cursor:pointer; fo
 .pagination { display:flex; gap:.4rem; list-style:none; padding:0; margin:1.5rem 0; }
 .pagination li a, .pagination li span { padding:.3rem .7rem; border:1px solid var(--line); border-radius:4px; background:#fff; text-decoration:none; }
 .pagination .active a { background:var(--accent); color:#fff; }
+.picker { position:relative; flex:1 1 320px; }
+.picker input { width:100%; max-width:none; margin:0; }
+.suggestions { position:absolute; z-index:10; left:0; right:0; top:100%; margin:.2rem 0 0; padding:0; list-style:none; background:#fff; border:1px solid var(--line); border-radius:6px; box-shadow:0 4px 14px rgba(0,0,0,.08); max-height:320px; overflow:auto; }
+.suggestions li { padding:.45rem .7rem; cursor:pointer; display:flex; flex-direction:column; }
+.suggestions li small { color:var(--muted); }
+.suggestions li:hover, .suggestions li.active { background:#eef4fc; }

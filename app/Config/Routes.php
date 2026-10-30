@@ -37,6 +37,8 @@ $routes->group('admin', ['filter' => ['tenant', 'auth', 'admin'], 'namespace' =>
     $routes->get('ftp/(:num)', 'FtpAccounts::show/$1');
     $routes->post('ftp/(:num)/password', 'FtpAccounts::regeneratePassword/$1');
     $routes->post('ftp/(:num)/toggle', 'FtpAccounts::toggle/$1');
+    $routes->post('ftp/(:num)/visibility', 'FtpAccounts::visibility/$1');
+    $routes->get('directory', 'Directory::search');
     $routes->post('ftp/(:num)/delete', 'FtpAccounts::delete/$1');
     $routes->post('ftp/(:num)/members', 'FtpAccounts::addMember/$1');
     $routes->post('ftp/(:num)/members/(:num)/delete', 'FtpAccounts::removeMember/$1/$2');

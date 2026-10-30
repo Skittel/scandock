@@ -19,7 +19,9 @@ the scans. Scans are deleted automatically after a configurable number of days
 - All users are admins until an Entra admin group is configured
 - FTP accounts per copier: plain FTP, explicit FTPS (port 21) and implicit FTPS
   (port 990); upload-only (no listing, download, rename or delete), PDF only
-- Access to scans per FTP account for persons (UPN) and Entra groups
+- FTP accounts are public (all users see the scans) or private (only assigned
+  persons and Entra groups, with directory autocomplete); admin rights do not
+  grant access to private scans
 - PDF thumbnails, inline preview, download, delete
 - Automatic deletion after the retention period
 - Warning for admins 30 days before the Entra client secret expires; admins

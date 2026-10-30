@@ -6,12 +6,12 @@ use App\Controllers\BaseController;
 use App\Models\FtpAccountMemberModel;
 use App\Models\FtpAccountModel;
 use App\Models\ScanModel;
-use App\Models\UserModel;
 use CodeIgniter\Exceptions\PageNotFoundException;
 use CodeIgniter\HTTP\ResponseInterface;
 
 /**
- * Admin pages for FTP accounts and the people/groups that may see their scans.
+ * Admin pages for FTP accounts: credentials, visibility (public/private) and
+ * the users/groups that may see the scans of private accounts.
  */
 class FtpAccounts extends BaseController
 {
@@ -35,7 +35,8 @@ class FtpAccounts extends BaseController
         if ($label === '' || mb_strlen($label) > 190) {
             return redirect()->back()->with('error', 'Bitte eine Bezeichnung (max. 190 Zeichen) angeben, z. B. den Standort des Kopierers.');
         }
-        $account = service('ftpAccountManager')->create($this->tenant(), $label);
+        $visibility = $this->request->getPost('visibility') === 'public' ? 'public' : 'private';
+        $account    = service('ftpAccountManager')->create($this->tenant(), $label, $visibility);
 
         return redirect()->to('admin/ftp/' . $account['id'])->with('notice', 'Das FTP-Konto wurde angelegt.');
     }
@@ -49,7 +50,6 @@ class FtpAccounts extends BaseController
             'account'  => $account,
             'password' => FtpAccountModel::plainPassword($account),
             'members'  => model(FtpAccountMemberModel::class)->forAccount($id),
-            'users'    => model(UserModel::class)->where('tenant_id', $this->tenant()['id'])->orderBy('name')->findAll(),
             'host'     => $config->ftpHost,
             'port'     => $config->ftpPort,
             'tlsPort'  => $config->ftpImplicitTlsPort,
@@ -71,6 +71,17 @@ class FtpAccounts extends BaseController
         return redirect()->to('admin/ftp/' . $id)->with('notice', $account['active'] ? 'Konto gesperrt.' : 'Konto aktiviert.');
     }
 
+    public function visibility(int $id): ResponseInterface
+    {
+        $this->findAccount($id);
+        $visibility = $this->request->getPost('visibility') === 'public' ? 'public' : 'private';
+        model(FtpAccountModel::class)->update($id, ['visibility' => $visibility]);
+
+        return redirect()->to('admin/ftp/' . $id)->with('notice', $visibility === 'public'
+            ? 'Das Konto ist jetzt öffentlich: Alle Benutzer sehen die Scans.'
+            : 'Das Konto ist jetzt privat: Nur die eingetragenen Personen und Gruppen sehen die Scans.');
+    }
+
     public function delete(int $id): ResponseInterface
     {
         service('ftpAccountManager')->delete($this->findAccount($id));
@@ -85,8 +96,13 @@ class FtpAccounts extends BaseController
         $ref   = strtolower(trim((string) $this->request->getPost('member_ref')));
         $label = trim((string) $this->request->getPost('label'));
 
+        // Free text without a selection from the suggestions: infer the type.
+        if ($type === '') {
+            $type = preg_match(self::GUID, $ref) === 1 ? 'group' : 'user';
+        }
+
         if ($type === 'user' && filter_var($ref, FILTER_VALIDATE_EMAIL) === false) {
-            return redirect()->back()->with('error', 'Bitte den Anmeldenamen (UPN, z. B. name@firma.de) der Person angeben.');
+            return redirect()->back()->with('error', 'Bitte eine Person oder Gruppe aus den Vorschlägen wählen oder den Anmeldenamen (z. B. name@firma.de) bzw. die Objekt-ID einer Gruppe eingeben.');
         }
         if ($type === 'group' && preg_match(self::GUID, $ref) !== 1) {
             return redirect()->back()->with('error', 'Bitte die Objekt-ID der Entra-Gruppe angeben.');

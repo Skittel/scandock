@@ -66,6 +66,15 @@ class Services extends BaseService
         return new \App\Libraries\ScanStore(config(ScanKai::class));
     }
 
+    public static function directory(bool $getShared = true): \App\Libraries\DirectoryClient
+    {
+        if ($getShared) {
+            return static::getSharedInstance('directory');
+        }
+
+        return new \App\Libraries\DirectoryClient();
+    }
+
     public static function scanAccess(bool $getShared = true): \App\Libraries\ScanAccess
     {
         if ($getShared) {

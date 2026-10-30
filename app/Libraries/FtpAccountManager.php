@@ -22,7 +22,7 @@ class FtpAccountManager
     {
     }
 
-    public function create(array $tenant, string $label): array
+    public function create(array $tenant, string $label, string $visibility = 'private'): array
     {
         $model = model(FtpAccountModel::class);
 
@@ -34,6 +34,7 @@ class FtpAccountManager
         $id       = $model->insert([
             'tenant_id'          => $tenant['id'],
             'label'              => $label,
+            'visibility'         => $visibility === 'public' ? 'public' : 'private',
             'username'           => $username,
             'password_hash'      => self::hashPassword($password),
             'password_encrypted' => base64_encode(service('encrypter')->encrypt($password)),

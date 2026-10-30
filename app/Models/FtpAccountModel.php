@@ -13,7 +13,7 @@ class FtpAccountModel extends Model
     protected $table         = 'ftp_accounts';
     protected $returnType    = 'array';
     protected $useTimestamps = true;
-    protected $allowedFields = ['tenant_id', 'label', 'username', 'password_hash', 'password_encrypted', 'active'];
+    protected $allowedFields = ['tenant_id', 'label', 'visibility', 'username', 'password_hash', 'password_encrypted', 'active'];
 
     public function forTenant(int $tenantId): array
     {

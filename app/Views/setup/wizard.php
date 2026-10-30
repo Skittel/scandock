@@ -32,7 +32,8 @@
         <li>Unter <strong>API-Berechtigungen</strong> muss <strong>Microsoft Graph → User.Read</strong> (delegiert) eingetragen sein. Bei neuen Registrierungen ist das bereits der Fall.</li>
         <li>Empfohlen: <strong>Administratorzustimmung für &lt;Ihre Organisation&gt; erteilen</strong> klicken. Dann werden Ihre Mitarbeiter bei der ersten Anmeldung nicht nach ihrer Zustimmung gefragt.</li>
     </ol>
-    <p class="hint">Mit User.Read liest ScanKai bei jeder Anmeldung nur die Gruppenmitgliedschaften des angemeldeten Benutzers (auch Microsoft-365-Gruppen und verschachtelte Gruppen). Darüber vergeben Sie Rechte (Admin-Gruppe, Zugriff auf FTP-Konten). Weitere Berechtigungen und eine Tokenkonfiguration sind nicht nötig.</p>
+    <p class="hint">Mit User.Read liest ScanKai bei jeder Anmeldung nur die Gruppenmitgliedschaften des angemeldeten Benutzers (auch Microsoft-365-Gruppen und verschachtelte Gruppen). Darüber vergeben Sie Rechte (Admin-Gruppe, Zugriff auf FTP-Konten). Eine Tokenkonfiguration ist nicht nötig.</p>
+    <p><strong>Optional – Vorschläge beim Zuordnen von Personen und Gruppen:</strong> Unter <em>API-Berechtigungen → Berechtigung hinzufügen → Microsoft Graph → <strong>Anwendungsberechtigungen</strong></em> die Berechtigungen <code>User.Read.All</code> und <code>Group.ReadBasic.All</code> hinzufügen und die <strong>Administratorzustimmung erteilen</strong>. Dann schlägt ScanKai beim Tippen Personen und Gruppen aus Ihrem Verzeichnis vor. Ohne diese Berechtigungen geben Sie Anmeldenamen bzw. Gruppen-IDs von Hand ein.</p>
 
     <h2>5. Werte hier eintragen</h2>
     <?php foreach ($errors as $error): ?><div class="flash err"><?= esc($error) ?></div><?php endforeach ?>

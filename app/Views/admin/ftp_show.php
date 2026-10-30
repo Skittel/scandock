@@ -23,43 +23,49 @@
 
 <section class="card">
     <h2>Wer sieht die Scans?</h2>
-    <p class="hint">Administratoren sehen immer alle Scans. Weitere Personen oder Entra-Gruppen hier hinzufügen.</p>
-    <?php if ($members === []): ?>
-        <p class="muted">Noch niemand zugeordnet.</p>
+    <?= form_open('admin/ftp/' . $account['id'] . '/visibility', ['class' => 'form']) ?>
+        <label class="check"><input type="radio" name="visibility" value="public" <?= $account['visibility'] === 'public' ? 'checked' : '' ?> onchange="this.form.submit()">
+            <strong>Öffentlich</strong> – alle Benutzer sehen die Scans</label>
+        <label class="check"><input type="radio" name="visibility" value="private" <?= $account['visibility'] === 'private' ? 'checked' : '' ?> onchange="this.form.submit()">
+            <strong>Privat</strong> – nur die unten eingetragenen Personen und Gruppen sehen die Scans</label>
+        <noscript><button class="button small">Speichern</button></noscript>
+    <?= form_close() ?>
+
+    <?php if ($account['visibility'] === 'private'): ?>
+        <p class="hint">Auch Administratoren sehen private Scans nur, wenn sie selbst oder eine ihrer Gruppen eingetragen sind.</p>
+
+        <?php if ($members === []): ?>
+            <p class="warn">Noch niemand eingetragen – die Scans dieses Kontos sieht derzeit niemand.</p>
+        <?php else: ?>
+        <table class="table">
+            <thead><tr><th>Typ</th><th>Name</th><th>Kennung</th><th></th></tr></thead>
+            <tbody>
+            <?php foreach ($members as $member): ?>
+                <tr>
+                    <td><?= $member['member_type'] === 'group' ? 'Gruppe' : 'Person' ?></td>
+                    <td><?= esc($member['label']) ?></td>
+                    <td><code><?= esc($member['member_ref']) ?></code></td>
+                    <td><?= form_open('admin/ftp/' . $account['id'] . '/members/' . $member['id'] . '/delete', ['class' => 'inline', 'onsubmit' => "return confirm('Berechtigung entfernen?')"]) ?><button class="button small danger">Entfernen</button><?= form_close() ?></td>
+                </tr>
+            <?php endforeach ?>
+            </tbody>
+        </table>
+        <?php endif ?>
+
+        <h3>Person oder Gruppe hinzufügen</h3>
+        <?= form_open('admin/ftp/' . $account['id'] . '/members', ['class' => 'form row member-picker', 'data-search-url' => site_url('admin/directory'), 'autocomplete' => 'off']) ?>
+            <input type="hidden" name="member_type" value="">
+            <input type="hidden" name="label" value="">
+            <div class="picker">
+                <input name="member_ref" required placeholder="Name, Anmeldename oder Gruppe suchen …" aria-autocomplete="list">
+                <ul class="suggestions" hidden></ul>
+            </div>
+            <button class="button">Hinzufügen</button>
+        <?= form_close() ?>
+        <p class="hint picker-hint">Vorschläge kommen aus Ihrem Microsoft-Verzeichnis, sofern ScanKai die Anwendungsberechtigungen <em>User.Read.All</em> und <em>Group.ReadBasic.All</em> hat. Sonst werden Personen vorgeschlagen, die sich schon angemeldet haben. Sie können auch direkt einen Anmeldenamen (name@firma.de) oder die Objekt-ID einer Gruppe eingeben.</p>
     <?php else: ?>
-    <table class="table">
-        <thead><tr><th>Typ</th><th>Name</th><th>Kennung</th><th></th></tr></thead>
-        <tbody>
-        <?php foreach ($members as $member): ?>
-            <tr>
-                <td><?= $member['member_type'] === 'group' ? 'Gruppe' : 'Person' ?></td>
-                <td><?= esc($member['label']) ?></td>
-                <td><code><?= esc($member['member_ref']) ?></code></td>
-                <td><?= form_open('admin/ftp/' . $account['id'] . '/members/' . $member['id'] . '/delete', ['class' => 'inline']) ?><button class="button small danger">Entfernen</button><?= form_close() ?></td>
-            </tr>
-        <?php endforeach ?>
-        </tbody>
-    </table>
+        <p class="hint">Bei öffentlichen Konten ist keine Zuordnung nötig.<?= $members !== [] ? ' Die bisher eingetragenen ' . count($members) . ' Personen/Gruppen bleiben gespeichert und gelten wieder, wenn das Konto privat wird.' : '' ?></p>
     <?php endif ?>
-
-    <h3>Person hinzufügen</h3>
-    <?= form_open('admin/ftp/' . $account['id'] . '/members', ['class' => 'form row']) ?>
-        <input type="hidden" name="member_type" value="user">
-        <input name="member_ref" list="known-users" required placeholder="Anmeldename, z. B. max@firma.de">
-        <datalist id="known-users">
-            <?php foreach ($users as $u): ?><option value="<?= esc($u['upn'], 'attr') ?>"><?= esc($u['name']) ?></option><?php endforeach ?>
-        </datalist>
-        <input name="label" placeholder="Name (optional)">
-        <button class="button">Hinzufügen</button>
-    <?= form_close() ?>
-
-    <h3>Entra-Gruppe hinzufügen</h3>
-    <?= form_open('admin/ftp/' . $account['id'] . '/members', ['class' => 'form row']) ?>
-        <input type="hidden" name="member_type" value="group">
-        <input name="member_ref" required placeholder="Objekt-ID der Gruppe">
-        <input name="label" required placeholder="Gruppenname">
-        <button class="button">Hinzufügen</button>
-    <?= form_close() ?>
-    <p class="hint">Die Objekt-ID finden Sie in Entra unter <em>Gruppen → Gruppe → Übersicht</em>.</p>
 </section>
+<script src="/js/member-picker.js?v=<?= esc(config('ScanKai')->version) ?>" defer></script>
 <?= $this->endSection() ?>
