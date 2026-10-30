@@ -30,7 +30,7 @@ class Scans extends BaseController
             $sections[] = [
                 'account' => $account,
                 'scans'   => $scans->where('tenant_id', $tenant['id'])->where('ftp_account_id', $account['id'])
-                    ->orderBy('received_at', 'DESC')->paginate(24, $group),
+                    ->orderBy('received_at', 'DESC')->orderBy('id', 'DESC')->paginate(24, $group),
                 'total'   => $scans->pager->getTotal($group),
                 'group'   => $group,
             ];

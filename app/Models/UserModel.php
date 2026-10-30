@@ -12,7 +12,7 @@ class UserModel extends Model
     protected $table         = 'users';
     protected $returnType    = 'array';
     protected $useTimestamps = true;
-    protected $allowedFields = ['tenant_id', 'entra_oid', 'upn', 'name', 'group_ids', 'collapsed_accounts', 'last_login_at'];
+    protected $allowedFields = ['tenant_id', 'entra_oid', 'upn', 'name', 'group_ids', 'collapsed_accounts', 'theme', 'last_login_at'];
 
     /**
      * Creates or updates the user from validated ID token claims.

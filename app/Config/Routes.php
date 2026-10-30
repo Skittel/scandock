@@ -22,6 +22,9 @@ $routes->group('auth', ['filter' => 'tenant:any'], static function ($routes) {
     $routes->post('logout', 'Auth::logout');
 });
 
+// Personal settings.
+$routes->post('account/theme', 'Account::theme', ['filter' => ['tenant', 'auth']]);
+
 // Scans of the signed-in user.
 $routes->group('scans', ['filter' => ['tenant', 'auth']], static function ($routes) {
     $routes->get('/', 'Scans::index');

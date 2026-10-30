@@ -1,5 +1,6 @@
 <!DOCTYPE html>
-<html lang="de">
+<?php $theme = $user['theme'] ?? 'auto' ?>
+<html lang="de"<?= $theme !== 'auto' ? ' data-theme="' . esc($theme, 'attr') . '"' : '' ?>>
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -27,15 +28,25 @@
         <?php endif ?>
     </div>
     <?php if (! empty($user)): ?>
-    <nav>
-        <a href="/scans">Scans</a>
-        <?php if (! empty($isAdmin)): ?>
-            <a href="/admin/ftp">FTP-Konten</a>
-            <a href="/admin/settings">Einstellungen</a>
-        <?php endif ?>
-        <span class="who"><?= esc($user['name']) ?></span>
-        <?= form_open('auth/logout', ['class' => 'inline']) ?><button class="link">Abmelden</button><?= form_close() ?>
-    </nav>
+    <details class="user-menu">
+        <summary title="<?= esc($user['name'], 'attr') ?>"><?= esc($user['upn'] !== '' ? $user['upn'] : $user['name']) ?></summary>
+        <div class="menu">
+            <?php if (! empty($isAdmin)): ?>
+                <a href="/admin/ftp">FTP-Konten</a>
+                <a href="/admin/settings">Einstellungen</a>
+                <hr>
+            <?php endif ?>
+            <div class="label">Darstellung</div>
+            <?= form_open('account/theme', ['class' => 'themes', 'data-theme-form' => '1']) ?>
+                <?php foreach (['light' => 'Hell', 'dark' => 'Dunkel', 'auto' => 'System'] as $value => $text): ?>
+                    <button name="theme" value="<?= $value ?>" aria-pressed="<?= $theme === $value ? 'true' : 'false' ?>"><?= $text ?></button>
+                <?php endforeach ?>
+            <?= form_close() ?>
+            <hr>
+            <?= form_open('auth/logout') ?><button class="item">Abmelden</button><?= form_close() ?>
+        </div>
+    </details>
+    <script src="/js/user-menu.js?v=<?= esc(config('ScanKai')->version) ?>" defer></script>
     <?php endif ?>
 </header>
 <main>
