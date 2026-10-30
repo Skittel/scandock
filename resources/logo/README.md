@@ -1,9 +1,18 @@
 # ScanKai logo
 
-Vector recreation of the ScanKai logo. `mklogo.py` generates
-`logo-scankai.svg` (animated wave), `logo-scankai-icon.svg` (animated) and
-`favicon.svg` (static). The wordmark outlines are derived from Nunito Black
-(SIL Open Font License, see `Nunito-OFL.txt`).
+Design by the project owner. `mklogo.py` generates from it:
 
-The wave moves very slowly (24 s / 36 s per period) and stops for users who
-prefer reduced motion.
+- `logo-scankai.svg` – full logo, the wave undulates very slowly (20 s cycle, SMIL)
+- `logo-scankai-icon.svg` – square icon, animated
+- `favicon.svg` – square icon, static (also rendered to `favicon.ico` and `apple-touch-icon.png`)
+
+The wordmark ("Scan" navy, "Kai" blue gradient) is converted to outlines using
+Liberation Sans Bold (metric-compatible with Arial, SIL Open Font License), so
+it looks the same on every device.
+
+```bash
+python3 mklogo.py
+for n in 16 32 48; do rsvg-convert -w $n -h $n favicon.svg -o f$n.png; done
+convert f16.png f32.png f48.png favicon.ico
+rsvg-convert -w 180 -h 180 -b white favicon.svg -o apple-touch-icon.png
+```

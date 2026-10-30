@@ -1,67 +1,87 @@
-import sys
-words = open(sys.argv[1]).read().split('\n')
-_, _, width = words[0].split(); scan, kai = words[1], words[2]
-NAVY, BLUE = '#0b2140', '#04a3ef'
+"""Builds the ScanKai logo files from the original design (logo design by the
+project owner). The wordmark is converted to outlines with Liberation Sans Bold
+(metric-compatible with Arial, SIL OFL) so it renders identically everywhere."""
+from fontTools.ttLib import TTFont
+from fontTools.pens.svgPathPen import SVGPathPen
+from fontTools.pens.transformPen import TransformPen
+from fontTools.pens.boundsPen import BoundsPen
 
-def wave(y, amp, period=80, x0=-240, x1=720):
-    d = f'M{x0},{y}'
-    x = x0
-    while x < x1:
-        d += f' q{period/4},{-amp} {period/2},0 q{period/4},{amp} {period/2},0'
-        x += period
-    return d
+FONT = '/usr/share/fonts/truetype/liberation/LiberationSans-Bold.ttf'
+SIZE, X0, BASE, SPACING = 145, 390, 235, -5
 
-def icon(animated, uid, fade=.12):
+font = TTFont(FONT)
+gs, cmap, hmtx = font.getGlyphSet(), font.getBestCmap(), font['hmtx']
+k = SIZE / font['head'].unitsPerEm
+
+def outline(text, x):
+    cmds, bounds = [], None
+    for ch in text:
+        g = cmap[ord(ch)]
+        t = (k, 0, 0, -k, x, BASE)
+        pen = SVGPathPen(gs); gs[g].draw(TransformPen(pen, t)); cmds.append(pen.getCommands())
+        bp = BoundsPen(gs); gs[g].draw(TransformPen(bp, t))
+        if bp.bounds:
+            b = bp.bounds
+            bounds = b if bounds is None else (min(bounds[0], b[0]), min(bounds[1], b[1]), max(bounds[2], b[2]), max(bounds[3], b[3]))
+        x += hmtx[g][0] * k + SPACING
+    return ' '.join(cmds), x, bounds
+
+scan, x, _ = outline('Scan', X0)
+kai, x_end, kb = outline('Kai', x)
+right = round(kb[2] + 20)
+
+WAVE_A = 'C75 {a} 115 {b} 180 {m} S285 {c} 350 {m}'
+def wave(m, phase):
+    # phase +1 = original shape, -1 = mirrored shape
+    return f'M20 {m} ' + WAVE_A.format(a=m - 29 * phase, b=m + 26 * phase, c=m - 26 * phase, m=m)
+
+def wave_el(m, stroke, animated):
+    d = wave(m, 1)
     anim = ''
-    cls1 = cls2 = ''
     if animated:
-        anim = f'''<style>
-  @keyframes sk-wave-{uid} {{ from {{ transform: translateX(0) }} to {{ transform: translateX(-80px) }} }}
-  .sk-w1-{uid} {{ animation: sk-wave-{uid} 24s linear infinite; }}
-  .sk-w2-{uid} {{ animation: sk-wave-{uid} 36s linear infinite reverse; }}
-  @media (prefers-reduced-motion: reduce) {{ .sk-w1-{uid}, .sk-w2-{uid} {{ animation: none; }} }}
-</style>'''
-        cls1, cls2 = f' class="sk-w1-{uid}"', f' class="sk-w2-{uid}"'
-    return f'''{anim}
-<defs>
-  <linearGradient id="sk-fade-{uid}" x1="80" x2="385" gradientUnits="userSpaceOnUse">
-    <stop offset="0" stop-color="#fff" stop-opacity="0"/><stop offset="{fade}" stop-color="#fff"/>
-    <stop offset="{1-fade}" stop-color="#fff"/><stop offset="1" stop-color="#fff" stop-opacity="0"/>
-  </linearGradient>
-  <mask id="sk-mask-{uid}" maskUnits="userSpaceOnUse" x="70" y="370" width="330" height="70">
-    <rect x="70" y="370" width="330" height="70" fill="url(#sk-fade-{uid})"/>
-  </mask>
-</defs>
-<g fill="{NAVY}">
-  <rect x="106" y="326" width="30" height="60" rx="10"/>
-  <rect x="334" y="326" width="30" height="60" rx="10"/>
-  <rect x="116" y="362" width="238" height="20" rx="4"/>
-  <rect x="146" y="380" width="10" height="26"/><rect x="196" y="380" width="10" height="26"/>
-  <rect x="264" y="380" width="10" height="26"/><rect x="314" y="380" width="10" height="26"/>
-</g>
-<path d="M164,212 H262 L310,260 V356 H164 Z" fill="#fff" stroke="{NAVY}" stroke-width="16" stroke-linejoin="round"/>
-<path d="M262,206 V250 a12,12 0 0 0 12,12 H318 Z" fill="{BLUE}" stroke="{BLUE}" stroke-width="4" stroke-linejoin="round"/>
-<rect x="186" y="270" width="74" height="14" rx="7" fill="{NAVY}"/>
-<rect x="186" y="296" width="64" height="13" rx="6.5" fill="{NAVY}"/>
-<rect x="186" y="324" width="74" height="15" rx="7.5" fill="{BLUE}"/>
-<g mask="url(#sk-mask-{uid})" fill="none" stroke="{BLUE}" stroke-linecap="round">
-  <path{cls2} d="{wave(393, 7)}" stroke-width="5"/>
-  <path{cls1} d="{wave(409, 9)}" stroke-width="14"/>
-</g>'''
+        # Very slow undulation: one full cycle every 20 s.
+        anim = (f'\n    <animate attributeName="d" dur="20s" repeatCount="indefinite" calcMode="spline"'
+                f' keyTimes="0;0.5;1" keySplines="0.45 0 0.55 1;0.45 0 0.55 1"'
+                f' values="{wave(m, 1)};{wave(m, -1)};{wave(m, 1)}"/>\n  ')
+    return f'  <path d="{d}" fill="none" stroke="{stroke}" stroke-width="22" stroke-linecap="round">{anim}</path>'
 
-S_ = 150/705
-full = f'''<svg xmlns="http://www.w3.org/2000/svg" viewBox="78 190 1150 240" role="img" aria-label="ScanKai">
-<title>ScanKai</title>{icon(True, 'l')}
-<g transform="translate(418 415) scale({S_:.5f})">
-  <path fill="{NAVY}" d="{scan}"/>
-  <path fill="{BLUE}" d="{kai}"/>
-</g>
+def icon(animated):
+    return f'''  <defs>
+    <linearGradient id="sk-blue" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#00BFFF"/>
+      <stop offset="100%" stop-color="#0099EE"/>
+    </linearGradient>
+  </defs>
+  <g fill="#082B55">
+    <rect x="48" y="210" width="35" height="85" rx="8"/>
+    <rect x="42" y="200" width="47" height="20" rx="10"/>
+    <rect x="295" y="210" width="35" height="85" rx="8"/>
+    <rect x="289" y="200" width="47" height="20" rx="10"/>
+    <rect x="75" y="255" width="230" height="25" rx="3"/>
+    <rect x="110" y="275" width="24" height="40"/>
+    <rect x="245" y="275" width="24" height="40"/>
+  </g>
+  <path d="M115 50 Q115 30 135 30 H240 L295 85 V255 H115 Z" fill="#FFFFFF" stroke="#082B55" stroke-width="12" stroke-linejoin="round"/>
+  <path d="M240 30 V72 Q240 85 253 85 H295 Z" fill="url(#sk-blue)"/>
+  <rect x="145" y="112" width="110" height="18" rx="9" fill="#082B55"/>
+  <rect x="145" y="150" width="85" height="18" rx="9" fill="#082B55"/>
+  <rect x="145" y="188" width="95" height="18" rx="9" fill="url(#sk-blue)"/>
+{wave_el(299, "#FFFFFF", animated)}
+{wave_el(305, "url(#sk-blue)", animated)}'''
+
+full = f'''<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 10 {right} 330" role="img" aria-label="ScanKai Logo">
+  <title>ScanKai</title>
+{icon(True)}
+  <path fill="#082B55" d="{scan}"/>
+  <path fill="url(#sk-blue)" d="{kai}"/>
 </svg>
 '''
-icon_svg = lambda animated, uid, fade=.12: f'''<svg xmlns="http://www.w3.org/2000/svg" viewBox="95 172 280 280" role="img" aria-label="ScanKai">
-<title>ScanKai</title>{icon(animated, uid, fade)}
+square = lambda animated: f'''<svg xmlns="http://www.w3.org/2000/svg" viewBox="5 2 350 350" role="img" aria-label="ScanKai">
+  <title>ScanKai</title>
+{icon(animated)}
 </svg>
 '''
-open('logo-scankai.svg','w').write(full)
-open('logo-scankai-icon.svg','w').write(icon_svg(True, 'i'))
-open('favicon.svg','w').write(icon_svg(False, 'f', .02))
+open('logo-scankai.svg', 'w').write(full)
+open('logo-scankai-icon.svg', 'w').write(square(True))
+open('favicon.svg', 'w').write(square(False))
+print('viewBox width', right)

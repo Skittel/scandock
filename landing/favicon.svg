@@ -1,28 +1,25 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="95 172 280 280" role="img" aria-label="ScanKai">
-<title>ScanKai</title>
-<defs>
-  <linearGradient id="sk-fade-f" x1="80" x2="385" gradientUnits="userSpaceOnUse">
-    <stop offset="0" stop-color="#fff" stop-opacity="0"/><stop offset="0.02" stop-color="#fff"/>
-    <stop offset="0.98" stop-color="#fff"/><stop offset="1" stop-color="#fff" stop-opacity="0"/>
-  </linearGradient>
-  <mask id="sk-mask-f" maskUnits="userSpaceOnUse" x="70" y="370" width="330" height="70">
-    <rect x="70" y="370" width="330" height="70" fill="url(#sk-fade-f)"/>
-  </mask>
-</defs>
-<g fill="#0b2140">
-  <rect x="106" y="326" width="30" height="60" rx="10"/>
-  <rect x="334" y="326" width="30" height="60" rx="10"/>
-  <rect x="116" y="362" width="238" height="20" rx="4"/>
-  <rect x="146" y="380" width="10" height="26"/><rect x="196" y="380" width="10" height="26"/>
-  <rect x="264" y="380" width="10" height="26"/><rect x="314" y="380" width="10" height="26"/>
-</g>
-<path d="M164,212 H262 L310,260 V356 H164 Z" fill="#fff" stroke="#0b2140" stroke-width="16" stroke-linejoin="round"/>
-<path d="M262,206 V250 a12,12 0 0 0 12,12 H318 Z" fill="#04a3ef" stroke="#04a3ef" stroke-width="4" stroke-linejoin="round"/>
-<rect x="186" y="270" width="74" height="14" rx="7" fill="#0b2140"/>
-<rect x="186" y="296" width="64" height="13" rx="6.5" fill="#0b2140"/>
-<rect x="186" y="324" width="74" height="15" rx="7.5" fill="#04a3ef"/>
-<g mask="url(#sk-mask-f)" fill="none" stroke="#04a3ef" stroke-linecap="round">
-  <path d="M-240,393 q20.0,-7 40.0,0 q20.0,7 40.0,0 q20.0,-7 40.0,0 q20.0,7 40.0,0 q20.0,-7 40.0,0 q20.0,7 40.0,0 q20.0,-7 40.0,0 q20.0,7 40.0,0 q20.0,-7 40.0,0 q20.0,7 40.0,0 q20.0,-7 40.0,0 q20.0,7 40.0,0 q20.0,-7 40.0,0 q20.0,7 40.0,0 q20.0,-7 40.0,0 q20.0,7 40.0,0 q20.0,-7 40.0,0 q20.0,7 40.0,0 q20.0,-7 40.0,0 q20.0,7 40.0,0 q20.0,-7 40.0,0 q20.0,7 40.0,0 q20.0,-7 40.0,0 q20.0,7 40.0,0" stroke-width="5"/>
-  <path d="M-240,409 q20.0,-9 40.0,0 q20.0,9 40.0,0 q20.0,-9 40.0,0 q20.0,9 40.0,0 q20.0,-9 40.0,0 q20.0,9 40.0,0 q20.0,-9 40.0,0 q20.0,9 40.0,0 q20.0,-9 40.0,0 q20.0,9 40.0,0 q20.0,-9 40.0,0 q20.0,9 40.0,0 q20.0,-9 40.0,0 q20.0,9 40.0,0 q20.0,-9 40.0,0 q20.0,9 40.0,0 q20.0,-9 40.0,0 q20.0,9 40.0,0 q20.0,-9 40.0,0 q20.0,9 40.0,0 q20.0,-9 40.0,0 q20.0,9 40.0,0 q20.0,-9 40.0,0 q20.0,9 40.0,0" stroke-width="14"/>
-</g>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="5 2 350 350" role="img" aria-label="ScanKai">
+  <title>ScanKai</title>
+  <defs>
+    <linearGradient id="sk-blue" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#00BFFF"/>
+      <stop offset="100%" stop-color="#0099EE"/>
+    </linearGradient>
+  </defs>
+  <g fill="#082B55">
+    <rect x="48" y="210" width="35" height="85" rx="8"/>
+    <rect x="42" y="200" width="47" height="20" rx="10"/>
+    <rect x="295" y="210" width="35" height="85" rx="8"/>
+    <rect x="289" y="200" width="47" height="20" rx="10"/>
+    <rect x="75" y="255" width="230" height="25" rx="3"/>
+    <rect x="110" y="275" width="24" height="40"/>
+    <rect x="245" y="275" width="24" height="40"/>
+  </g>
+  <path d="M115 50 Q115 30 135 30 H240 L295 85 V255 H115 Z" fill="#FFFFFF" stroke="#082B55" stroke-width="12" stroke-linejoin="round"/>
+  <path d="M240 30 V72 Q240 85 253 85 H295 Z" fill="url(#sk-blue)"/>
+  <rect x="145" y="112" width="110" height="18" rx="9" fill="#082B55"/>
+  <rect x="145" y="150" width="85" height="18" rx="9" fill="#082B55"/>
+  <rect x="145" y="188" width="95" height="18" rx="9" fill="url(#sk-blue)"/>
+  <path d="M20 299 C75 270 115 325 180 299 S285 273 350 299" fill="none" stroke="#FFFFFF" stroke-width="22" stroke-linecap="round"></path>
+  <path d="M20 305 C75 276 115 331 180 305 S285 279 350 305" fill="none" stroke="url(#sk-blue)" stroke-width="22" stroke-linecap="round"></path>
 </svg>
