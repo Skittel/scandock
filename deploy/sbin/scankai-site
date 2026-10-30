@@ -15,6 +15,12 @@ if ! [[ "$host" =~ ^([a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?\.)?scankai\.site$ ]]; th
 fi
 conf="/etc/apache2/sites-available/scankai-${host}.conf"
 
+# The base domain and www serve the static landing page, everything else the app.
+if [ "$host" = "$BASE_DOMAIN" ] || [ "$host" = "www.$BASE_DOMAIN" ]; then
+    DOCROOT="/var/www/scankai/landing"
+fi
+OVERRIDE=$([ "$DOCROOT" = "/var/www/scankai/public" ] && echo All || echo None)
+
 case "$action" in
   add)
     if [ ! -d "/etc/letsencrypt/live/${host}" ]; then
@@ -28,7 +34,7 @@ case "$action" in
 
     <Directory ${DOCROOT}>
         Options -Indexes +FollowSymLinks
-        AllowOverride All
+        AllowOverride ${OVERRIDE}
         Require all granted
     </Directory>
 

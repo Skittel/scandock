@@ -2,6 +2,9 @@
 <?= $this->section('content') ?>
 <section class="card">
     <h1>Einrichtung für <?= esc($tenant['name']) ?></h1>
+    <?php if ($tenant['status'] === 'active'): ?>
+        <div class="flash warn">ScanKai ist für Sie bereits eingerichtet. Über diesen Link können Sie die Entra-Anbindung erneuern, z. B. nach Ablauf des Clientschlüssels. Die Kopierer senden in der Zwischenzeit weiter.</div>
+    <?php endif ?>
     <p>Damit sich Ihre Mitarbeiter mit ihrem Microsoft-365-Konto anmelden können, legen Sie in Ihrem Microsoft Entra ID eine App-Registrierung an. Dafür benötigen Sie die Rolle <em>Anwendungsadministrator</em> oder <em>Globaler Administrator</em>.</p>
 
     <h2>1. App registrieren</h2>
@@ -20,7 +23,7 @@
     <h2>3. Geheimen Clientschlüssel erstellen</h2>
     <ol>
         <li><strong>Zertifikate &amp; Geheimnisse → Geheime Clientschlüssel → Neuer geheimer Clientschlüssel</strong></li>
-        <li>Beschreibung <code>ScanKai</code>, Ablauf z. B. 24 Monate. <em>Notieren Sie sich das Ablaufdatum</em>, danach muss ein neuer Schlüssel hinterlegt werden.</li>
+        <li>Beschreibung <code>ScanKai</code>, Ablauf z. B. 24 Monate. Das Ablaufdatum tragen Sie unten mit ein.</li>
         <li>Kopieren Sie den <strong>Wert</strong> (nicht die Geheimnis-ID). Er wird nur einmal angezeigt.</li>
     </ol>
 
@@ -40,6 +43,9 @@
             <input name="entra_client_id" required value="<?= esc(old('entra_client_id', $tenant['entra_client_id'] ?? ''), 'attr') ?>" placeholder="00000000-0000-0000-0000-000000000000"></label>
         <label>Wert des geheimen Clientschlüssels
             <input name="entra_client_secret" type="password" autocomplete="off" <?= $configured ? 'placeholder="gespeichert – leer lassen, um ihn zu behalten"' : 'required' ?>></label>
+        <label>Ablaufdatum des Clientschlüssels (Spalte „Läuft ab“ in Entra)
+            <input name="entra_secret_expires_at" type="date" <?= empty($tenant['entra_secret_expires_at']) ? 'required' : '' ?> min="<?= date('Y-m-d', strtotime('+1 day')) ?>" max="<?= esc($maxExpiry, 'attr') ?>" value="<?= esc(old('entra_secret_expires_at', $tenant['entra_secret_expires_at'] ?? ''), 'attr') ?>"></label>
+        <p class="hint">ScanKai prüft die Werte beim Speichern direkt bei Microsoft und warnt Administratoren rechtzeitig vor dem Ablauf des Schlüssels.</p>
         <button class="button">Speichern</button>
     <?= form_close() ?>
 

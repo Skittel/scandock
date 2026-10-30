@@ -12,7 +12,7 @@ class ScanKai extends BaseConfig
     /**
      * Application version (major.minor.patch, each 0-999).
      */
-    public string $version = '0.0.1';
+    public string $version = '0.0.2';
 
     /**
      * Domain below which every tenant gets its own subdomain.
@@ -50,6 +50,16 @@ class ScanKai extends BaseConfig
      * Default retention for new tenants in days.
      */
     public int $defaultRetentionDays = 30;
+
+    /**
+     * Admins are warned this many days before the Entra client secret expires.
+     */
+    public int $secretWarningDays = 30;
+
+    /**
+     * Latest accepted expiry date of a client secret, in days from today.
+     */
+    public int $secretMaxLifetimeDays = 1100;
 
     /**
      * Minimum age in seconds of an uploaded file before it is ingested.

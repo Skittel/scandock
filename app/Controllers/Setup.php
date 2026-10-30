@@ -9,7 +9,8 @@ use CodeIgniter\HTTP\ResponseInterface;
 /**
  * Onboarding wizard reached through the start link. Collects the values of
  * the customer's Entra app registration and tests the sign-in. After the
- * first successful sign-in the start link stops working.
+ * first successful sign-in through the link it stops working. A new link for
+ * an active tenant (e.g. expired secret) keeps the tenant and FTP running.
  */
 class Setup extends BaseController
 {
@@ -25,6 +26,7 @@ class Setup extends BaseController
             'redirectUri' => site_url('auth/callback'),
             'logoutUri'   => site_url('/'),
             'configured'  => ! empty($tenant['entra_client_secret']),
+            'maxExpiry'   => date('Y-m-d', strtotime('+' . config('ScanKai')->secretMaxLifetimeDays . ' days')),
             'errors'      => session()->getFlashdata('errors') ?? [],
             'loginError'  => session()->getFlashdata('login_error'),
         ]);
@@ -36,6 +38,7 @@ class Setup extends BaseController
         $tenantId = trim((string) $this->request->getPost('entra_tenant_id'));
         $clientId = trim((string) $this->request->getPost('entra_client_id'));
         $secret   = trim((string) $this->request->getPost('entra_client_secret'));
+        $expires  = trim((string) $this->request->getPost('entra_secret_expires_at'));
 
         $errors = [];
         if (preg_match(self::GUID, $tenantId) !== 1) {
@@ -47,6 +50,18 @@ class Setup extends BaseController
         if ($secret === '' && empty($tenant['entra_client_secret'])) {
             $errors[] = 'Bitte den Wert des geheimen Clientschlüssels eintragen.';
         }
+        if ($secret !== '' || empty($tenant['entra_secret_expires_at']) || $expires !== '') {
+            if (($error = TenantModel::validateSecretExpiry($expires)) !== null) {
+                $errors[] = $error;
+            }
+        }
+        if ($errors === []) {
+            $effectiveSecret = $secret !== '' ? $secret : model(TenantModel::class)->clientSecret($tenant);
+            $error           = service('entra')->verifyClientSecret($tenantId, $clientId, (string) $effectiveSecret);
+            if ($error !== null) {
+                $errors[] = 'Microsoft meldet: ' . $error;
+            }
+        }
         if ($errors !== []) {
             return redirect()->to('setup/' . $token)->withInput()->with('errors', $errors);
         }
@@ -57,6 +72,9 @@ class Setup extends BaseController
         ];
         if ($secret !== '') {
             $data['entra_client_secret'] = TenantModel::encryptSecret($secret);
+        }
+        if ($expires !== '') {
+            $data['entra_secret_expires_at'] = $expires;
         }
         model(TenantModel::class)->update($tenant['id'], $data);
 

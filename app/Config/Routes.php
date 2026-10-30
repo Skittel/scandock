@@ -7,8 +7,8 @@ use CodeIgniter\Router\RouteCollection;
  */
 $routes->get('/', 'Home::index');
 
-// Onboarding via start link (only while the tenant is in setup).
-$routes->group('setup', ['filter' => 'tenant:setup'], static function ($routes) {
+// Onboarding via start link (initial setup or re-issued link for an active tenant).
+$routes->group('setup', ['filter' => 'tenant:any'], static function ($routes) {
     $routes->get('(:segment)', 'Setup::show/$1');
     $routes->post('(:segment)', 'Setup::save/$1');
     $routes->post('(:segment)/test', 'Setup::test/$1');
@@ -42,4 +42,5 @@ $routes->group('admin', ['filter' => ['tenant', 'auth', 'admin'], 'namespace' =>
     $routes->post('ftp/(:num)/members/(:num)/delete', 'FtpAccounts::removeMember/$1/$2');
     $routes->get('settings', 'Settings::index');
     $routes->post('settings', 'Settings::save');
+    $routes->post('settings/secret', 'Settings::renewSecret');
 });

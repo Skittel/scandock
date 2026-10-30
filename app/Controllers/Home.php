@@ -5,7 +5,8 @@ namespace App\Controllers;
 use CodeIgniter\HTTP\ResponseInterface;
 
 /**
- * Entry point: landing page on the base domain, scan list on tenant hosts.
+ * Entry point of tenant hosts. The base domain serves the static landing page
+ * from /landing via its own vhost.
  */
 class Home extends BaseController
 {
@@ -13,14 +14,10 @@ class Home extends BaseController
     {
         $tenant = $this->tenant();
         if ($tenant === null) {
-            if (service('tenancy')->slugFromHost($this->request->getServer('HTTP_HOST') ?? '') !== null) {
-                return $this->response->setStatusCode(404)->setBody(view('message', [
-                    'title'   => 'Unbekannter Zugang',
-                    'message' => 'Unter dieser Adresse ist kein ScanKai-Zugang eingerichtet.',
-                ]));
-            }
-
-            return view('landing');
+            return $this->response->setStatusCode(404)->setBody(view('message', [
+                'title'   => 'Unbekannter Zugang',
+                'message' => 'Unter dieser Adresse ist kein ScanKai-Zugang eingerichtet.',
+            ]));
         }
 
         return redirect()->to('/scans');

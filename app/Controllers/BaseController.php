@@ -2,6 +2,7 @@
 
 namespace App\Controllers;
 
+use App\Models\TenantModel;
 use App\Models\UserModel;
 use CodeIgniter\Controller;
 use CodeIgniter\HTTP\CLIRequest;
@@ -57,10 +58,14 @@ abstract class BaseController extends Controller
      */
     protected function render(string $view, array $data = []): string
     {
+        $tenant  = $this->tenant();
+        $isAdmin = $this->isAdmin();
+
         return view($view, $data + [
-            'tenant'  => $this->tenant(),
-            'user'    => $this->currentUser(),
-            'isAdmin' => $this->isAdmin(),
+            'tenant'          => $tenant,
+            'user'            => $this->currentUser(),
+            'isAdmin'         => $isAdmin,
+            'secretDaysLeft'  => $isAdmin && $tenant !== null ? TenantModel::secretDaysLeft($tenant) : null,
         ]);
     }
 }

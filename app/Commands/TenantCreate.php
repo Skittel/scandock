@@ -32,7 +32,7 @@ class TenantCreate extends BaseCommand
             return EXIT_USER_INPUT;
         }
         if ($tenants->findBySlug($slug) !== null) {
-            CLI::error('Tenant "' . $slug . '" already exists. Use tenant:link to get a new start link.');
+            CLI::error('Tenant "' . $slug . '" already exists. Show its start link with tenant:link, create a new one with tenant:link-renew.');
 
             return EXIT_USER_INPUT;
         }

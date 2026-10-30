@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="95 172 280 280" role="img" aria-label="ScanKai">
+<title>ScanKai</title><style>
+  @keyframes sk-wave-i { from { transform: translateX(0) } to { transform: translateX(-80px) } }
+  .sk-w1-i { animation: sk-wave-i 24s linear infinite; }
+  .sk-w2-i { animation: sk-wave-i 36s linear infinite reverse; }
+  @media (prefers-reduced-motion: reduce) { .sk-w1-i, .sk-w2-i { animation: none; } }
+</style>
+<defs>
+  <linearGradient id="sk-fade-i" x1="80" x2="385" gradientUnits="userSpaceOnUse">
+    <stop offset="0" stop-color="#fff" stop-opacity="0"/><stop offset="0.12" stop-color="#fff"/>
+    <stop offset="0.88" stop-color="#fff"/><stop offset="1" stop-color="#fff" stop-opacity="0"/>
+  </linearGradient>
+  <mask id="sk-mask-i" maskUnits="userSpaceOnUse" x="70" y="370" width="330" height="70">
+    <rect x="70" y="370" width="330" height="70" fill="url(#sk-fade-i)"/>
+  </mask>
+</defs>
+<g fill="#0b2140">
+  <rect x="106" y="326" width="30" height="60" rx="10"/>
+  <rect x="334" y="326" width="30" height="60" rx="10"/>
+  <rect x="116" y="362" width="238" height="20" rx="4"/>
+  <rect x="146" y="380" width="10" height="26"/><rect x="196" y="380" width="10" height="26"/>
+  <rect x="264" y="380" width="10" height="26"/><rect x="314" y="380" width="10" height="26"/>
+</g>
+<path d="M164,212 H262 L310,260 V356 H164 Z" fill="#fff" stroke="#0b2140" stroke-width="16" stroke-linejoin="round"/>
+<path d="M262,206 V250 a12,12 0 0 0 12,12 H318 Z" fill="#04a3ef" stroke="#04a3ef" stroke-width="4" stroke-linejoin="round"/>
+<rect x="186" y="270" width="74" height="14" rx="7" fill="#0b2140"/>
+<rect x="186" y="296" width="64" height="13" rx="6.5" fill="#0b2140"/>
+<rect x="186" y="324" width="74" height="15" rx="7.5" fill="#04a3ef"/>
+<g mask="url(#sk-mask-i)" fill="none" stroke="#04a3ef" stroke-linecap="round">
+  <path class="sk-w2-i" d="M-240,393 q20.0,-7 40.0,0 q20.0,7 40.0,0 q20.0,-7 40.0,0 q20.0,7 40.0,0 q20.0,-7 40.0,0 q20.0,7 40.0,0 q20.0,-7 40.0,0 q20.0,7 40.0,0 q20.0,-7 40.0,0 q20.0,7 40.0,0 q20.0,-7 40.0,0 q20.0,7 40.0,0 q20.0,-7 40.0,0 q20.0,7 40.0,0 q20.0,-7 40.0,0 q20.0,7 40.0,0 q20.0,-7 40.0,0 q20.0,7 40.0,0 q20.0,-7 40.0,0 q20.0,7 40.0,0 q20.0,-7 40.0,0 q20.0,7 40.0,0 q20.0,-7 40.0,0 q20.0,7 40.0,0" stroke-width="5"/>
+  <path class="sk-w1-i" d="M-240,409 q20.0,-9 40.0,0 q20.0,9 40.0,0 q20.0,-9 40.0,0 q20.0,9 40.0,0 q20.0,-9 40.0,0 q20.0,9 40.0,0 q20.0,-9 40.0,0 q20.0,9 40.0,0 q20.0,-9 40.0,0 q20.0,9 40.0,0 q20.0,-9 40.0,0 q20.0,9 40.0,0 q20.0,-9 40.0,0 q20.0,9 40.0,0 q20.0,-9 40.0,0 q20.0,9 40.0,0 q20.0,-9 40.0,0 q20.0,9 40.0,0 q20.0,-9 40.0,0 q20.0,9 40.0,0 q20.0,-9 40.0,0 q20.0,9 40.0,0 q20.0,-9 40.0,0 q20.0,9 40.0,0" stroke-width="14"/>
+</g>
+</svg>

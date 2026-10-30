@@ -79,7 +79,7 @@ class EntraOidc
         $body = json_decode($response->getBody(), true) ?: [];
         if ($response->getStatusCode() !== 200 || empty($body['id_token'])) {
             $error = $body['error_description'] ?? $body['error'] ?? 'HTTP ' . $response->getStatusCode();
-            throw new RuntimeException('Token request failed: ' . strtok($error, "\r\n"));
+            throw new RuntimeException(self::describeError($error));
         }
 
         return $this->validateIdToken($tenant, $body['id_token'], $nonce);
@@ -121,6 +121,53 @@ class EntraOidc
         }
 
         return $claims;
+    }
+
+    /**
+     * Checks a client secret by requesting an app-only token (client
+     * credentials). Needs no API permissions.
+     *
+     * @return string|null error message, null if the secret works
+     */
+    public function verifyClientSecret(string $entraTenantId, string $clientId, string $secret): ?string
+    {
+        $response = service('curlrequest', ['timeout' => 15, 'http_errors' => false])
+            ->post(self::LOGIN_HOST . '/' . rawurlencode($entraTenantId) . '/oauth2/v2.0/token', [
+                'form_params' => [
+                    'client_id'     => $clientId,
+                    'client_secret' => $secret,
+                    'grant_type'    => 'client_credentials',
+                    'scope'         => 'https://graph.microsoft.com/.default',
+                ],
+            ]);
+        if ($response->getStatusCode() === 200) {
+            return null;
+        }
+        $body = json_decode($response->getBody(), true) ?: [];
+
+        return self::describeError($body['error_description'] ?? $body['error'] ?? 'HTTP ' . $response->getStatusCode());
+    }
+
+    /**
+     * Turns an Entra error description into a short German message.
+     */
+    public static function describeError(string $description): string
+    {
+        $codes = [
+            'AADSTS7000222' => 'Der geheime Clientschlüssel ist abgelaufen.',
+            'AADSTS7000215' => 'Der geheime Clientschlüssel ist ungültig. Bitte den Wert (nicht die Geheimnis-ID) eintragen.',
+            'AADSTS700016'  => 'Die Anwendungs-ID (Client) wurde in diesem Verzeichnis nicht gefunden.',
+            'AADSTS90002'   => 'Die Verzeichnis-ID (Mandant) wurde nicht gefunden.',
+            'AADSTS900023'  => 'Die Verzeichnis-ID (Mandant) ist ungültig.',
+            'AADSTS50011'   => 'Die Umleitungs-URI stimmt nicht mit der App-Registrierung überein.',
+        ];
+        foreach ($codes as $code => $message) {
+            if (str_contains($description, $code . ':')) {
+                return $message . ' (' . $code . ')';
+            }
+        }
+
+        return strtok($description, "\r\n");
     }
 
     /**

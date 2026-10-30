@@ -8,7 +8,7 @@ use App\Models\UserModel;
 use CodeIgniter\HTTP\ResponseInterface;
 
 /**
- * Tenant settings: admin group and retention period.
+ * Tenant settings: admin group, retention period and Entra client secret renewal.
  */
 class Settings extends BaseController
 {
@@ -18,6 +18,7 @@ class Settings extends BaseController
     {
         return $this->render('admin/settings', [
             'userGroups' => UserModel::groupIds($this->currentUser()),
+            'maxExpiry'  => date('Y-m-d', strtotime('+' . config('ScanKai')->secretMaxLifetimeDays . ' days')),
         ]);
     }
 
@@ -45,5 +46,33 @@ class Settings extends BaseController
         ]);
 
         return redirect()->to('admin/settings')->with('notice', 'Einstellungen gespeichert.');
+    }
+
+    /**
+     * Replaces the Entra client secret after checking it with Microsoft.
+     */
+    public function renewSecret(): ResponseInterface
+    {
+        $tenant  = $this->tenant();
+        $secret  = trim((string) $this->request->getPost('entra_client_secret'));
+        $expires = trim((string) $this->request->getPost('entra_secret_expires_at'));
+
+        if ($secret === '') {
+            return redirect()->to('admin/settings#secret')->with('error', 'Bitte den Wert des neuen geheimen Clientschlüssels eintragen.');
+        }
+        if (($error = TenantModel::validateSecretExpiry($expires)) !== null) {
+            return redirect()->to('admin/settings#secret')->with('error', $error);
+        }
+        $error = service('entra')->verifyClientSecret($tenant['entra_tenant_id'], $tenant['entra_client_id'], $secret);
+        if ($error !== null) {
+            return redirect()->to('admin/settings#secret')->with('error', 'Microsoft meldet: ' . $error);
+        }
+
+        model(TenantModel::class)->update($tenant['id'], [
+            'entra_client_secret'     => TenantModel::encryptSecret($secret),
+            'entra_secret_expires_at' => $expires,
+        ]);
+
+        return redirect()->to('admin/settings#secret')->with('notice', 'Der neue Clientschlüssel funktioniert und wurde gespeichert. Den alten Schlüssel können Sie in Entra jetzt löschen.');
     }
 }

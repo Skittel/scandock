@@ -4,8 +4,9 @@ body { margin:0; font:15px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,sans-se
 a { color:var(--accent); }
 code { background:#eef1f6; padding:1px 5px; border-radius:4px; font-size:.92em; word-break:break-all; }
 .topbar { display:flex; justify-content:space-between; align-items:center; gap:1rem; padding:.7rem 1.5rem; background:#fff; border-bottom:1px solid var(--line); flex-wrap:wrap; }
-.brand { font-weight:700; font-size:1.15rem; text-decoration:none; color:var(--fg); }
-.brand span { font-weight:400; color:var(--muted); margin-left:.4rem; }
+.brand { display:flex; align-items:center; gap:.6rem; font-weight:600; font-size:1.05rem; text-decoration:none; color:var(--fg); }
+.brand img { height:34px; width:auto; }
+.brand span { font-weight:400; color:var(--muted); border-left:1px solid var(--line); padding-left:.6rem; }
 nav { display:flex; gap:1rem; align-items:center; flex-wrap:wrap; }
 nav a { text-decoration:none; }
 .who { color:var(--muted); }

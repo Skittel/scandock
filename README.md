@@ -22,6 +22,8 @@ the scans. Scans are deleted automatically after a configurable number of days
 - Access to scans per FTP account for persons (UPN) and Entra groups
 - PDF thumbnails, inline preview, download, delete
 - Automatic deletion after the retention period
+- Warning for admins 30 days before the Entra client secret expires; admins
+  renew the secret in the settings (checked against Microsoft before saving)
 
 ## Stack
 
@@ -32,12 +34,16 @@ poppler-utils · certbot
 
 ```bash
 scankai tenant:create <slug> --name "Customer"   # vhost + certificate + start link
-scankai tenant:link <slug> [--reset]             # new start link
+scankai tenant:link <slug>                       # show current start link
+scankai tenant:link-renew <slug>                 # new start link (tenant stays active)
 scankai tenant:list
 scankai tenant:status <slug> disable|enable
 scankai scans:ingest                             # run by systemd timer every 20 s
 scankai scans:purge                              # run by systemd timer daily
 ```
+
+The static landing page for the base domain and `www` lives in [`landing/`](landing/).
+The logo sources are in [`resources/logo/`](resources/logo/).
 
 `scankai` is a wrapper that runs `php spark` as `www-data`. Server configuration
 (ProFTPD, AppArmor, systemd units, vhost helper, fail2ban) lives in
