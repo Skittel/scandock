@@ -1,0 +1,16 @@
+# ScanDock: ProFTPD logs not covered by Ubuntu's proftpd logrotate config.
+# copytruncate keeps ProFTPD's open file handles valid; scandock-ftplog
+# notices the truncated stor.log and starts reading from the beginning.
+/var/log/proftpd/auth.log
+/var/log/proftpd/tls.log
+/var/log/proftpd/ban.log
+/var/log/proftpd/stor.log
+{
+    weekly
+    rotate 8
+    missingok
+    notifempty
+    compress
+    delaycompress
+    copytruncate
+}

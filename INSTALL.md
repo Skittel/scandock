@@ -229,13 +229,14 @@ sudo systemctl enable --now scandock-upload-watch.service \
   scandock-ingest.timer scandock-purge.timer scandock-diskguard.timer scandock-ftplog.timer
 sudo install -m 644 $D/cron/scandock-backup /etc/cron.d/scandock-backup
 sudo install -m 644 $D/fail2ban/scandock.conf /etc/fail2ban/jail.d/ && sudo systemctl restart fail2ban
+sudo install -m 644 $D/logrotate/scandock-proftpd /etc/logrotate.d/scandock-proftpd
 ```
 
 | Service | Purpose |
 |---|---|
 | `scandock-upload-watch` | imports an upload ~1 s after it is complete (inotify) |
 | `scandock-ingest.timer` | fallback import every 20 s |
-| `scandock-purge.timer` | daily 03:15: retention, failed deletions, orphaned files, old journal entries |
+| `scandock-purge.timer` | daily 03:15: retention, failed deletions, orphaned files, old journal entries, application logs > 90 days |
 | `scandock-diskguard.timer` | every minute: < 10 GB free → stop FTP, warning for all users; ≥ 11 GB → resume |
 | `scandock-ftplog.timer` | every 15 s: reports uploads aborted by the FTP server (> 50 MB) |
 | cron `scandock-backup` | daily 03:00: backup to `/backup`, keeps 30 |

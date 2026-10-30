@@ -19,7 +19,7 @@ Quelle der Punkte aus dem Review: [Auswertung ChatGPT-Review 30.10.26](reviews/2
 Wöchentlich: Archiv in den RAM entpacken, Datenbank in eine Testdatenbank einspielen, eine Stichprobe von Scans mit dem Schlüssel aus dem Archiv entschlüsseln und mit der SHA-256 vergleichen, Ergebnis ins Log.
 
 ### Hinweis zur Backup-Aufbewahrung für Kunden
-*Aus Review 4.3a*
+*Aus Review 4.3a · Projektinhaber: erst wenn ein Kunde den Dienst bestellt (Datenschutz-Info/AVV)*
 Gelöschte Scans bleiben bis zu 30 Tage in den Sicherungen, insgesamt also bis zu ca. 60 Tage gespeichert. In die Kundeninformation (Datenschutz/AVV) aufnehmen, ggf. die Backup-Aufbewahrung verkürzen.
 
 ### Automatisierte Tests und CI
@@ -27,7 +27,7 @@ Gelöschte Scans bleiben bis zu 30 Tage in den Sicherungen, insgesamt also bis z
 PHPUnit-Tests für Verschlüsselung, Import (inkl. vollem Datenträger, Abbruch, Neustart), Berechtigungen (Objekt-ID, veraltete Gruppen), Löschen/Wiederholung, Dateinamen. Dazu GitHub Actions mit PHPUnit und PHPStan bei jedem Push.
 
 ### Monitoring und Benachrichtigung
-*Aus Review 7*
+*Aus Review 7 · Projektinhaber: später*
 Überwachung von FTP-Dienst, Webanwendung, Import, Löschlauf, Datensicherung, Speicherwächter und Zertifikaten. Bei Fehlern Mail an den Betreiber. Setzt einen Mailversand (SMTP) voraus.
 
 ### Gerätestatus je FTP-Konto
@@ -63,6 +63,7 @@ Optionales Ablegen der Scans in SharePoint/OneDrive. Braucht zusätzliche Graph-
 Bewusst nicht im Journal. Nur auf Kundenwunsch zuschaltbar.
 
 ## Erledigt
+- 2026-10-30 · Log-Rotation ProFTPD-Logs, Aufräumen der Anwendungslogs nach 90 Tagen (0.0.33).
 - 2026-10-30 · Dateinamen: max. 30 Zeichen (sonst 26 + Zähler), Umlaute → ae/oe/ue/ss (0.0.27).
 - 2026-10-30 · Dateinamen von FTP normalisieren: nur a–z, A–Z, 0–9, max. 20 Zeichen, sonst 16 + Zähler, Endung max. 4 Zeichen (0.0.26).
 - 2026-10-30 · Review-Punkte 1–4: kein Datenverlust bei vollem Datenträger, verlässliches Löschen, Objekt-ID statt UPN, Höchstalter Gruppen, Temp-Dateien im RAM, Composer-Metadaten; Speicherwächter (10 GB), max. 50 MB pro Datei (0.0.25).

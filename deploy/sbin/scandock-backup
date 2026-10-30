@@ -93,6 +93,7 @@ PATHS=(
     etc/systemd/system/scandock-ftplog.timer
     etc/sudoers.d/scandock
     etc/fail2ban/jail.d/scandock.conf
+    etc/logrotate.d/scandock-proftpd
     etc/apparmor.d/local/proftpd
     etc/apparmor.d/local/qpdf
     etc/ufw

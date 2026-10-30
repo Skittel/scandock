@@ -19,6 +19,17 @@ class ScansPurge extends BaseCommand
         $count = service('scanStore')->purgeExpired();
         CLI::write('Deleted ' . $count . ' expired scan(s).');
 
+        // Application logs (one file per day) are kept for 90 days.
+        $logs = 0;
+        foreach (glob(WRITEPATH . 'logs/log-*.log') ?: [] as $file) {
+            if (filemtime($file) < strtotime('-90 days') && @unlink($file)) {
+                $logs++;
+            }
+        }
+        if ($logs > 0) {
+            CLI::write('Deleted ' . $logs . ' old log file(s).');
+        }
+
         return EXIT_SUCCESS;
     }
 }
