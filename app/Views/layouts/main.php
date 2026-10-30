@@ -34,6 +34,7 @@
             <?php if (! empty($isAdmin)): ?>
                 <a href="/admin/ftp">FTP-Konten</a>
                 <a href="/admin/settings">Einstellungen</a>
+                <a href="/admin/journal">Journal</a>
                 <hr>
             <?php endif ?>
             <div class="label">Darstellung</div>

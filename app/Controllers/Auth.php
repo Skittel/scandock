@@ -92,6 +92,7 @@ class Auth extends BaseController
         if ($tenant['status'] === 'setup' || $this->validSetupToken($tenant)) {
             model(TenantModel::class)->update($tenant['id'], ['status' => 'active']);
             model(TenantModel::class)->clearSetupToken((int) $tenant['id']);
+            service('audit')->record((int) $tenant['id'], 'tenant.setup_completed', [], $user['name'] . ' (' . $user['upn'] . ')');
             $session->remove('setup_token');
             $session->setFlashdata('notice', 'Die Anmeldung mit Microsoft Entra ID funktioniert. Die Einrichtung ist abgeschlossen, der Start-Link ist nun ungültig.');
         }

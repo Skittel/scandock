@@ -144,3 +144,5 @@ details.account.view-list .list-toolbar { display:flex; }
 .list-toolbar .button[disabled] { opacity:.45; cursor:default; }
 .scan-list .col-check { width:34px; padding-left:.8rem; padding-right:0; }
 .scan-list .col-check input { width:16px; height:16px; cursor:pointer; accent-color:var(--accent); }
+.nowrap { white-space:nowrap; }
+.table.journal td { vertical-align:top; }

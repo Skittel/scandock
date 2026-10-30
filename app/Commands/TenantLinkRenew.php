@@ -34,6 +34,7 @@ class TenantLinkRenew extends BaseCommand
         }
 
         $token = $tenants->issueSetupToken((int) $tenant['id']);
+        service('audit')->record((int) $tenant['id'], 'tenant.link', [], 'Betreiber (CLI)');
         CLI::write('Start link: ' . CLI::color(TenantLink::url($tenant['slug'], $token), 'yellow'));
         if ($tenant['status'] === 'active') {
             CLI::write('Tenant stays active; the link becomes invalid after the next successful sign-in through it.');

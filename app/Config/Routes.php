@@ -33,6 +33,7 @@ $routes->group('scans', ['filter' => ['tenant', 'auth']], static function ($rout
     $routes->post('collapsed', 'Scans::saveCollapsed');
     $routes->post('view', 'Scans::saveView');
     $routes->post('delete', 'Scans::deleteSelected');
+    $routes->post('zip', 'Scans::downloadZip');
     $routes->get('status', 'Scans::status');
     $routes->get('(:pid)/view', 'Scans::view/$1');
     $routes->get('(:pid)/download', 'Scans::download/$1');
@@ -53,6 +54,7 @@ $routes->group('admin', ['filter' => ['tenant', 'auth', 'admin'], 'namespace' =>
     $routes->post('ftp/(:pid)/delete', 'FtpAccounts::delete/$1');
     $routes->post('ftp/(:pid)/members', 'FtpAccounts::addMember/$1');
     $routes->post('ftp/(:pid)/members/(:pid)/delete', 'FtpAccounts::removeMember/$1/$2');
+    $routes->get('journal', 'Journal::index');
     $routes->get('settings', 'Settings::index');
     $routes->post('settings', 'Settings::save');
     $routes->post('settings/secret', 'Settings::renewSecret');

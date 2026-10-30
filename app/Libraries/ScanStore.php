@@ -235,12 +235,25 @@ class ScanStore
             $cutoff = date('Y-m-d H:i:s', strtotime('-' . max(1, (int) $tenant['retention_days']) . ' days'));
             $scans  = model(ScanModel::class)->where('tenant_id', $tenant['id'])->where('received_at <', $cutoff)->findAll();
             foreach ($scans as $scan) {
-                $this->delete($scan);
+                $this->deleteLogged($scan, 'scan.expired', 'System');
                 $count++;
             }
         }
 
         return $count;
+    }
+
+    /**
+     * Deletes a scan and records it in the admin journal ($action is
+     * "scan.deleted" for users or "scan.expired" for the retention purge).
+     */
+    public function deleteLogged(array $scan, string $action = 'scan.deleted', ?string $actor = null): void
+    {
+        $this->delete($scan);
+        service('audit')->record((int) $scan['tenant_id'], $action, [
+            'file'    => $scan['original_name'],
+            'account' => $this->accountLabel($scan['ftp_account_id'] === null ? null : (int) $scan['ftp_account_id']),
+        ], $actor);
     }
 
     public function delete(array $scan): void
@@ -321,6 +334,11 @@ class ScanStore
 
         model(ScanModel::class)->insert($scan);
         unlink($path);
+        service('audit')->record((int) $account['tenant_id'], 'scan.received', [
+            'file'    => $scan['original_name'],
+            'account' => $account['label'],
+            'size'    => number_format($scan['size'] / 1024, 0, ',', '.') . ' KB',
+        ], 'System (FTP)');
 
         return true;
     }
@@ -338,6 +356,11 @@ class ScanStore
             'reason'         => $reason,
         ]);
         log_message('warning', 'Rejected upload {file} of FTP account {id}: {reason}', ['file' => $name, 'id' => $account['id'], 'reason' => $reason]);
+        service('audit')->record((int) $account['tenant_id'], 'scan.rejected', [
+            'file'    => mb_substr($name, 0, 255),
+            'account' => $account['label'],
+            'reason'  => $reason,
+        ], 'System (FTP)');
         @unlink($path);
     }
 
@@ -389,6 +412,16 @@ class ScanStore
         }
 
         return true;
+    }
+
+    private function accountLabel(?int $accountId): string
+    {
+        static $labels = [];
+        if ($accountId === null) {
+            return '–';
+        }
+
+        return $labels[$accountId] ??= (string) (model(FtpAccountModel::class)->select('label')->find($accountId)['label'] ?? '–');
     }
 
     private function basePath(array $scan): string

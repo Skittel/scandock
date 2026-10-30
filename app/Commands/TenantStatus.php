@@ -32,6 +32,7 @@ class TenantStatus extends BaseCommand
             return EXIT_USER_INPUT;
         }
         $tenants->update($tenant['id'], ['status' => $action === 'disable' ? 'disabled' : 'active']);
+        service('audit')->record((int) $tenant['id'], 'tenant.status', ['status' => $action === 'disable' ? 'gesperrt' : 'entsperrt'], 'Betreiber (CLI)');
         CLI::write('Tenant ' . $tenant['slug'] . ' is now ' . ($action === 'disable' ? 'disabled' : 'active') . '.', 'green');
 
         return EXIT_SUCCESS;

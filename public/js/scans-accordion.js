@@ -49,11 +49,12 @@
     // List view: select all/none and delete the selection.
     function updateBulk(section) {
         var count = section.querySelectorAll('.scan-list input[name="ids[]"]:checked').length;
-        var button = section.querySelector('.bulk-delete button');
-        if (button) {
+        var labels = { zip: 'Ausgewählte herunterladen', 'delete': 'Ausgewählte löschen' };
+        section.querySelectorAll('.bulk-delete [data-bulk]').forEach(function (button) {
+            var label = labels[button.getAttribute('data-bulk')];
             button.disabled = count === 0;
-            button.textContent = count > 0 ? 'Ausgewählte löschen (' + count + ')' : 'Ausgewählte löschen';
-        }
+            button.textContent = count > 0 ? label + ' (' + count + ')' : label;
+        });
     }
 
     container.addEventListener('click', function (event) {
@@ -79,6 +80,13 @@
         }
         var section = event.target.closest('details.account');
         var count = section.querySelectorAll('.scan-list input[name="ids[]"]:checked').length;
+        // The download button submits the same form: no confirmation needed.
+        if (event.submitter && event.submitter.getAttribute('data-bulk') === 'zip') {
+            if (count === 0) {
+                event.preventDefault();
+            }
+            return;
+        }
         if (count === 0 || !window.confirm(count === 1 ? '1 Scan wirklich löschen?' : count + ' Scans wirklich löschen?')) {
             event.preventDefault();
         }

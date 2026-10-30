@@ -34,7 +34,10 @@ the scans. Scans are deleted automatically after a configurable number of days
   secretstream, one key per tenant, keys wrapped with the app key); plaintext
   intermediates only in RAM (/dev/shm)
 - Random public IDs in all URLs (no database IDs)
-- PDF thumbnails, inline preview, download, delete
+- Admin journal per tenant: configuration and FTP account changes, received,
+  rejected and deleted scans, operator actions (no sign-ins/downloads)
+- PDF thumbnails, inline preview, download, delete; list view with multi-select
+  for deleting or downloading as ZIP
 - Automatic deletion after the retention period
 - Warning for admins 30 days before the Entra client secret expires; admins
   renew the secret in the settings (checked against Microsoft before saving)

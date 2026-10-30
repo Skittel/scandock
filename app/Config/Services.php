@@ -93,6 +93,15 @@ class Services extends BaseService
         return new \App\Libraries\TenantBranding(config(ScanDock::class));
     }
 
+    public static function audit(bool $getShared = true): \App\Libraries\AuditLog
+    {
+        if ($getShared) {
+            return static::getSharedInstance('audit');
+        }
+
+        return new \App\Libraries\AuditLog();
+    }
+
     public static function scanAccess(bool $getShared = true): \App\Libraries\ScanAccess
     {
         if ($getShared) {

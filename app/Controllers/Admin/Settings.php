@@ -77,6 +77,17 @@ class Settings extends BaseController
             'admin_group_id' => $groupId === '' ? null : $groupId,
             'retention_days' => $retention,
         ]);
+        $audit    = service('audit');
+        $oldGroup = (string) ($tenant['admin_group_id'] ?? '');
+        if ($oldGroup !== $groupId) {
+            $audit->record((int) $tenant['id'], 'settings.admin_group', [
+                'old' => $oldGroup === '' ? 'keine (alle sind Admins)' : $oldGroup,
+                'new' => $groupId === '' ? 'keine (alle sind Admins)' : $groupId,
+            ]);
+        }
+        if ((int) $tenant['retention_days'] !== $retention) {
+            $audit->record((int) $tenant['id'], 'settings.retention', ['old' => (int) $tenant['retention_days'], 'new' => $retention]);
+        }
 
         return redirect()->to('admin/settings')->with('notice', 'Einstellungen gespeichert.');
     }
@@ -108,6 +119,9 @@ class Settings extends BaseController
             return redirect()->to('admin/settings#branding')->withInput()->with('error', 'Bitte einen Firmennamen mit höchstens 190 Zeichen angeben.');
         }
         model(TenantModel::class)->update($tenant['id'], ['name' => $name]);
+        if ($name !== $tenant['name']) {
+            service('audit')->record((int) $tenant['id'], 'settings.name', ['old' => $tenant['name'], 'new' => $name]);
+        }
 
         $file = $this->request->getFile('logo');
         if ($file !== null && $file->getError() !== UPLOAD_ERR_NO_FILE) {
@@ -115,6 +129,7 @@ class Settings extends BaseController
             if ($error !== null) {
                 return redirect()->to('admin/settings#branding')->with('error', $error);
             }
+            service('audit')->record((int) $tenant['id'], 'settings.logo');
         }
 
         return redirect()->to('admin/settings#branding')->with('notice', 'Firmenname und Logo gespeichert.');
@@ -123,6 +138,7 @@ class Settings extends BaseController
     public function deleteLogo(): ResponseInterface
     {
         service('tenantBranding')->delete($this->tenant());
+        service('audit')->record((int) $this->tenant()['id'], 'settings.logo_deleted');
 
         return redirect()->to('admin/settings#branding')->with('notice', 'Das Logo wurde entfernt.');
     }
@@ -151,6 +167,7 @@ class Settings extends BaseController
             'entra_client_secret'     => TenantModel::encryptSecret($secret),
             'entra_secret_expires_at' => $expires,
         ]);
+        service('audit')->record((int) $tenant['id'], 'settings.secret', ['expires' => date('d.m.Y', strtotime($expires))]);
 
         return redirect()->to('admin/settings#secret')->with('notice', 'Der neue Clientschlüssel funktioniert und wurde gespeichert. Den alten Schlüssel können Sie in Entra jetzt löschen.');
     }

@@ -27,6 +27,7 @@ class TenantRename extends BaseCommand
             return EXIT_USER_INPUT;
         }
         $tenants->update($tenant['id'], ['name' => $name]);
+        service('audit')->record((int) $tenant['id'], 'tenant.renamed', ['old' => $tenant['name'], 'new' => $name], 'Betreiber (CLI)');
         CLI::write('Display name of ' . $tenant['slug'] . ' is now "' . $name . '".', 'green');
 
         return EXIT_SUCCESS;

@@ -80,7 +80,8 @@
                 <button type="button" class="button small secondary" data-select="all">Alle</button>
                 <button type="button" class="button small secondary" data-select="none">Keine</button>
                 <?= form_open('scans/delete', ['id' => 'bulk-' . $account['public_id'], 'class' => 'inline bulk-delete']) ?>
-                    <button class="button small danger" disabled>Ausgewählte löschen</button>
+                    <button class="button small" formaction="<?= esc(site_url('scans/zip'), 'attr') ?>" data-bulk="zip" disabled>Ausgewählte herunterladen</button>
+                    <button class="button small danger" data-bulk="delete" disabled>Ausgewählte löschen</button>
                 <?= form_close() ?>
             </div>
             <?php endif ?>

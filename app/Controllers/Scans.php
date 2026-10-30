@@ -138,7 +138,7 @@ class Scans extends BaseController
 
     public function delete(string $id): ResponseInterface
     {
-        service('scanStore')->delete($this->findScan($id));
+        service('scanStore')->deleteLogged($this->findScan($id));
 
         return redirect()->back()->with('notice', 'Der Scan wurde gelöscht.');
     }
@@ -161,12 +161,77 @@ class Scans extends BaseController
         $count  = 0;
         foreach (model(ScanModel::class)->whereIn('public_id', array_slice($ids, 0, 500))->findAll() as $scan) {
             if ($access->canAccessScan($tenant, $user, $scan)) {
-                $store->delete($scan);
+                $store->deleteLogged($scan);
                 $count++;
             }
         }
 
         return redirect()->back()->with('notice', $count === 1 ? '1 Scan wurde gelöscht.' : $count . ' Scans wurden gelöscht.');
+    }
+
+    /**
+     * Downloads the selected scans (list view checkboxes) as one ZIP file.
+     * Files are decrypted and packed in RAM; the copy is removed afterwards.
+     */
+    public function downloadZip(): ResponseInterface
+    {
+        $ids = array_unique(array_filter(array_map('strval', (array) $this->request->getPost('ids'))));
+        if ($ids === []) {
+            return redirect()->back()->with('warning', 'Es wurden keine Scans ausgewählt.');
+        }
+
+        $tenant = $this->tenant();
+        $user   = $this->currentUser();
+        $store  = service('scanStore');
+        $access = service('scanAccess');
+        $scans  = array_filter(
+            model(ScanModel::class)->whereIn('public_id', array_slice($ids, 0, 500))->orderBy('received_at', 'DESC')->findAll(),
+            static fn ($scan) => $access->canAccessScan($tenant, $user, $scan)
+        );
+        if ($scans === []) {
+            return redirect()->back()->with('warning', 'Es wurden keine Scans ausgewählt.');
+        }
+        if (array_sum(array_column($scans, 'size')) > 1024 * 1024 * 1024) {
+            return redirect()->back()->with('error', 'Die Auswahl ist größer als 1 GB. Bitte weniger Scans auf einmal herunterladen.');
+        }
+
+        $work = \App\Libraries\FileCrypto::ramDirectory();
+        register_shutdown_function([\App\Libraries\FileCrypto::class, 'removeDirectory'], $work);
+
+        $zip     = new \ZipArchive();
+        $zipPath = $work . '/scans.zip';
+        $zip->open($zipPath, \ZipArchive::CREATE);
+        $names = [];
+        foreach ($scans as $i => $scan) {
+            $file  = $store->originalFile($scan);
+            $plain = $store->plaintext($scan, $file['path']);
+            $copy  = $work . '/' . $i;
+            if ($plain['cleanup'] !== null) {
+                rename($plain['path'], $copy);
+                \App\Libraries\FileCrypto::removeDirectory($plain['cleanup']);
+            } else {
+                // Unencrypted legacy file: never move the stored original.
+                copy($plain['path'], $copy);
+            }
+
+            // Unique, safe file names inside the archive.
+            $name = preg_replace('/[\x00-\x1F\/\\\\:*?"<>|]+/u', '_', $scan['original_name']);
+            $base = pathinfo($name, PATHINFO_FILENAME);
+            $ext  = pathinfo($name, PATHINFO_EXTENSION);
+            for ($n = 2; isset($names[strtolower($name)]); $n++) {
+                $name = $base . ' (' . $n . ')' . ($ext !== '' ? '.' . $ext : '');
+            }
+            $names[strtolower($name)] = true;
+            $zip->addFile($copy, $name);
+            // Scans are already compressed; storing is faster and not larger.
+            $zip->setCompressionName($name, \ZipArchive::CM_STORE);
+        }
+        $zip->close();
+
+        return $this->response->download($zipPath, null)
+            ->setFileName('scans-' . date('Ymd-His') . '.zip')
+            ->setContentType('application/zip', '')
+            ->setHeader('Cache-Control', 'private, no-store');
     }
 
     /**
