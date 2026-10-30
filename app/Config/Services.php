@@ -102,6 +102,15 @@ class Services extends BaseService
         return new \App\Libraries\AuditLog();
     }
 
+    public static function demoAccess(bool $getShared = true): \App\Libraries\DemoAccess
+    {
+        if ($getShared) {
+            return static::getSharedInstance('demoAccess');
+        }
+
+        return new \App\Libraries\DemoAccess(config(ScanDock::class));
+    }
+
     public static function scanAccess(bool $getShared = true): \App\Libraries\ScanAccess
     {
         if ($getShared) {

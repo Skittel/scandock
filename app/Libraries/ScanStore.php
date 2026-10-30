@@ -159,6 +159,23 @@ class ScanStore
      */
     public function ingestAll(): int
     {
+        // Only one import at a time, whoever calls it (upload watcher, timer,
+        // CLI). A second caller waits and then finds nothing left to do.
+        $lock = fopen(WRITEPATH . 'ingest.lock', 'c');
+        if ($lock === false || ! flock($lock, LOCK_EX)) {
+            throw new \RuntimeException('Could not acquire the ingest lock.');
+        }
+
+        try {
+            return $this->ingestAllLocked();
+        } finally {
+            flock($lock, LOCK_UN);
+            fclose($lock);
+        }
+    }
+
+    private function ingestAllLocked(): int
+    {
         $count    = 0;
         $manager  = service('ftpAccountManager');
 

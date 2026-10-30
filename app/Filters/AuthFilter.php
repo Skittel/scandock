@@ -17,6 +17,21 @@ class AuthFilter implements FilterInterface
     {
         $tenant  = service('tenancy')->current();
         $session = session();
+        $demo    = service('demoAccess');
+
+        // Demo tenant: automatic sign-in (switch users with ?demo_user=<upn>).
+        if ($demo->isDemo($tenant) && $demo->isAllowed($request->getIPAddress())) {
+            $wanted = $request->getGet('demo_user');
+            if ($wanted !== null || (int) $session->get('tenant_id') !== (int) $tenant['id'] || ! $session->get('user_id')) {
+                if ($demo->signIn($tenant, is_string($wanted) ? $wanted : null) === null) {
+                    return service('response')->setStatusCode(503)->setBody(view('message', [
+                        'title' => 'Demo nicht eingerichtet', 'message' => 'Der Demo-Kunde hat noch keine Benutzer.',
+                    ]));
+                }
+            }
+
+            return null;
+        }
 
         if ($tenant === null || (int) $session->get('tenant_id') !== (int) $tenant['id'] || ! $session->get('user_id')) {
             return redirect()->to('/auth/login');

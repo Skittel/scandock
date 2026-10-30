@@ -22,6 +22,15 @@ class TenantFilter implements FilterInterface
             throw PageNotFoundException::forPageNotFound();
         }
 
+        // The demo tenant is only reachable from the operator's addresses.
+        $demo = service('demoAccess');
+        if ($demo->isDemo($tenant) && ! $demo->isAllowed($request->getIPAddress())) {
+            return service('response')->setStatusCode(403)->setBody(view('message', [
+                'title'   => 'Kein Zugriff',
+                'message' => 'Dieser Demo-Zugang ist nicht öffentlich erreichbar.',
+            ]));
+        }
+
         $mode = $arguments[0] ?? 'active';
         $ok   = match ($mode) {
             'setup' => $tenant['status'] === 'setup',

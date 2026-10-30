@@ -12,7 +12,7 @@ class ScanDock extends BaseConfig
     /**
      * Application version (major.minor.patch, each 0-999).
      */
-    public string $version = '0.0.30';
+    public string $version = '0.0.31';
 
     /**
      * Logo and homepage of the operator, shown in the header next to the
@@ -21,6 +21,15 @@ class ScanDock extends BaseConfig
     public string $operatorLogo = '/operator-logo.svg';
     public string $operatorName = 'Skittel';
     public string $operatorUrl  = 'https://www.skittel.de/';
+
+    /**
+     * Demo tenant (slug) that is only reachable from $demoAllowedIps and
+     * signs users in without Microsoft. Set the addresses in .env:
+     * scandock.demoAllowedIps = "198.51.100.7, 2001:db8::/64"
+     */
+    public string $demoSlug        = 'demo';
+    public string $demoAllowedIps  = '';
+    public string $demoDefaultUser = 'anna.admin@muster-gmbh.example';
 
     /**
      * Help for users (button in the header, opens in a new tab).
