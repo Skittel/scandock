@@ -57,6 +57,34 @@ class DirectoryClient
     }
 
     /**
+     * IDs of all groups (direct and nested) the user belongs to, read with the
+     * app-only token. Returns null if not permitted or on error.
+     *
+     * @return list<string>|null
+     */
+    public function userGroupIds(array $tenant, string $userObjectId): ?array
+    {
+        $ids  = [];
+        $path = '/users/' . rawurlencode($userObjectId) . '/transitiveMemberOf?$select=id&$top=999';
+
+        for ($page = 0; $path !== null && $page < 20; $page++) {
+            $body = $this->get($tenant, $path, 'members');
+            if ($body === null) {
+                return null;
+            }
+            foreach ($body['value'] ?? [] as $object) {
+                if (($object['@odata.type'] ?? '') === '#microsoft.graph.group' && ! empty($object['id'])) {
+                    $ids[] = strtolower($object['id']);
+                }
+            }
+            $next = $body['@odata.nextLink'] ?? null;
+            $path = $next === null ? null : substr($next, strlen(self::GRAPH));
+        }
+
+        return array_values(array_unique($ids));
+    }
+
+    /**
      * Whether the last attempt showed that the directory search is not permitted.
      */
     public function isUnavailable(array $tenant, string $kind): bool

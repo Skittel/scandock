@@ -99,6 +99,8 @@ class Auth extends BaseController
             $session->setFlashdata('warning', 'Ihre Gruppenmitgliedschaften konnten nicht von Microsoft abgerufen werden. Gruppenbasierte Rechte greifen daher nicht.');
         }
 
+        cache()->save('groupsync_' . (int) $user['id'], time(), 300);
+
         $return = $session->get('login_return');
         $session->remove('login_return');
         $session->regenerate(true);

@@ -75,6 +75,15 @@ class Services extends BaseService
         return new \App\Libraries\DirectoryClient();
     }
 
+    public static function groupSync(bool $getShared = true): \App\Libraries\GroupSync
+    {
+        if ($getShared) {
+            return static::getSharedInstance('groupSync');
+        }
+
+        return new \App\Libraries\GroupSync();
+    }
+
     public static function scanAccess(bool $getShared = true): \App\Libraries\ScanAccess
     {
         if ($getShared) {
