@@ -37,6 +37,7 @@ class AuditLog
         'scan.rejected'          => ['scans', 'Datei „{file}“ abgelehnt und gelöscht ({account}): {reason}'],
         'scan.deleted'           => ['scans', 'Scan „{file}“ gelöscht ({account})'],
         'scan.expired'           => ['scans', 'Scan „{file}“ nach Ablauf der Aufbewahrung gelöscht ({account})'],
+        'scan.renamed'           => ['scans', 'Scan „{old}“ umbenannt in „{new}“ ({account}, neue Namensregeln)'],
         'tenant.setup_completed' => ['system', 'Einrichtung abgeschlossen, Anmeldung über Entra aktiv'],
         'tenant.renamed'         => ['system', 'Firmenname geändert: „{old}“ → „{new}“'],
         'tenant.status'          => ['system', 'Zugang {status}'],
