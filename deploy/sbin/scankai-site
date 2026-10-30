@@ -1,0 +1,62 @@
+#!/bin/bash
+# ScanKai: manage Apache vhost + Let's Encrypt certificate for one hostname.
+# Usage: scankai-site add|remove <hostname>
+# Allowed for www-data via sudoers; the hostname is strictly validated.
+set -euo pipefail
+
+BASE_DOMAIN="scankai.site"
+DOCROOT="/var/www/scankai/public"
+WEBROOT="/var/www/letsencrypt"
+EMAIL="info@skywebhosting.de"
+
+action="${1:-}"; host="${2:-}"
+if ! [[ "$host" =~ ^([a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?\.)?scankai\.site$ ]]; then
+    echo "Invalid hostname: $host" >&2; exit 2
+fi
+conf="/etc/apache2/sites-available/scankai-${host}.conf"
+
+case "$action" in
+  add)
+    if [ ! -d "/etc/letsencrypt/live/${host}" ]; then
+        certbot certonly --webroot -w "$WEBROOT" -d "$host" --email "$EMAIL" \
+            --agree-tos --no-eff-email -n --quiet
+    fi
+    cat > "$conf" <<VHOST
+<VirtualHost *:443>
+    ServerName ${host}
+    DocumentRoot ${DOCROOT}
+
+    <Directory ${DOCROOT}>
+        Options -Indexes +FollowSymLinks
+        AllowOverride All
+        Require all granted
+    </Directory>
+
+    SSLEngine on
+    SSLCertificateFile /etc/letsencrypt/live/${host}/fullchain.pem
+    SSLCertificateKeyFile /etc/letsencrypt/live/${host}/privkey.pem
+
+    Header always set Strict-Transport-Security "max-age=31536000"
+    Header always set X-Content-Type-Options "nosniff"
+    Header always set Referrer-Policy "same-origin"
+
+    ErrorLog \${APACHE_LOG_DIR}/scankai-error.log
+    CustomLog \${APACHE_LOG_DIR}/scankai-access.log combined
+</VirtualHost>
+VHOST
+    a2ensite -q "scankai-${host}" >/dev/null
+    apache2ctl configtest >/dev/null 2>&1
+    systemctl reload apache2
+    echo "OK https://${host}/"
+    ;;
+  remove)
+    a2dissite -q "scankai-${host}" >/dev/null 2>&1 || true
+    rm -f "$conf"
+    systemctl reload apache2
+    certbot delete --cert-name "$host" -n --quiet || true
+    echo "Removed ${host}"
+    ;;
+  *)
+    echo "Usage: $0 add|remove <hostname>" >&2; exit 1
+    ;;
+esac

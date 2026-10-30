@@ -1,0 +1,50 @@
+<?php
+
+namespace App\Models;
+
+use CodeIgniter\Model;
+
+/**
+ * Person who signed in via Entra ID. Users are created on first login.
+ */
+class UserModel extends Model
+{
+    protected $table         = 'users';
+    protected $returnType    = 'array';
+    protected $useTimestamps = true;
+    protected $allowedFields = ['tenant_id', 'entra_oid', 'upn', 'name', 'group_ids', 'last_login_at'];
+
+    /**
+     * Creates or updates the user from validated ID token claims.
+     *
+     * @param list<string> $groupIds
+     */
+    public function upsertFromLogin(int $tenantId, string $oid, string $upn, string $name, array $groupIds): array
+    {
+        $data = [
+            'tenant_id'     => $tenantId,
+            'entra_oid'     => $oid,
+            'upn'           => strtolower($upn),
+            'name'          => $name,
+            'group_ids'     => json_encode(array_values($groupIds)),
+            'last_login_at' => date('Y-m-d H:i:s'),
+        ];
+
+        $existing = $this->where('tenant_id', $tenantId)->where('entra_oid', $oid)->first();
+        if ($existing !== null) {
+            $this->update($existing['id'], $data);
+
+            return $this->find($existing['id']);
+        }
+
+        return $this->find($this->insert($data));
+    }
+
+    /**
+     * @return list<string>
+     */
+    public static function groupIds(array $user): array
+    {
+        return json_decode($user['group_ids'] ?? '[]', true) ?: [];
+    }
+}

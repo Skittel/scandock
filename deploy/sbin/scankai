@@ -1,0 +1,3 @@
+#!/bin/bash
+# ScanKai CLI: runs spark commands as www-data. Example: scankai tenant:create beecken
+exec sudo -u www-data php /var/www/scankai/spark "$@"

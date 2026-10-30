@@ -1,0 +1,49 @@
+:root { --fg:#1d2330; --muted:#6b7385; --bg:#f4f6f9; --card:#fff; --line:#dfe3ea; --accent:#1f5fbf; --danger:#b3261e; --ok:#1e7d3c; --warn:#a06200; }
+* { box-sizing: border-box; }
+body { margin:0; font:15px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif; color:var(--fg); background:var(--bg); }
+a { color:var(--accent); }
+code { background:#eef1f6; padding:1px 5px; border-radius:4px; font-size:.92em; word-break:break-all; }
+.topbar { display:flex; justify-content:space-between; align-items:center; gap:1rem; padding:.7rem 1.5rem; background:#fff; border-bottom:1px solid var(--line); flex-wrap:wrap; }
+.brand { font-weight:700; font-size:1.15rem; text-decoration:none; color:var(--fg); }
+.brand span { font-weight:400; color:var(--muted); margin-left:.4rem; }
+nav { display:flex; gap:1rem; align-items:center; flex-wrap:wrap; }
+nav a { text-decoration:none; }
+.who { color:var(--muted); }
+main { max-width:1200px; margin:1.5rem auto; padding:0 1.5rem; }
+footer { text-align:center; color:var(--muted); font-size:.85rem; padding:2rem 0; }
+.card { background:var(--card); border:1px solid var(--line); border-radius:8px; padding:1.2rem 1.5rem; margin-bottom:1.2rem; }
+.card.narrow { max-width:640px; margin:3rem auto; }
+h1 { margin:.2rem 0 1rem; } h2 { margin-top:1.6rem; font-size:1.15rem; } h3 { font-size:1rem; margin-top:1.3rem; }
+.hint { color:var(--muted); font-size:.9rem; } .muted { color:var(--muted); } .warn { color:var(--warn); }
+.flash { padding:.7rem 1rem; border-radius:6px; margin-bottom:1rem; border:1px solid; }
+.flash.ok { background:#e8f5ec; border-color:#b7dfc3; color:var(--ok); }
+.flash.warn { background:#fff4e0; border-color:#f0d39a; color:var(--warn); }
+.flash.err { background:#fdecea; border-color:#f3c1bc; color:var(--danger); }
+.button { display:inline-block; background:var(--accent); color:#fff; border:0; border-radius:6px; padding:.55rem 1rem; font:inherit; cursor:pointer; text-decoration:none; }
+.button.small { padding:.3rem .7rem; font-size:.85rem; }
+.button.danger { background:var(--danger); }
+button.link { background:none; border:0; color:var(--accent); cursor:pointer; font:inherit; padding:0; }
+.inline { display:inline; margin:0; }
+.form label { display:block; margin:.8rem 0; font-weight:600; }
+.form label.check { font-weight:400; }
+.form input:not([type=checkbox]), select { display:block; width:100%; max-width:520px; padding:.5rem .6rem; border:1px solid var(--line); border-radius:6px; font:inherit; margin-top:.25rem; }
+.form.row, .row { display:flex; gap:.6rem; align-items:center; flex-wrap:wrap; margin:.8rem 0; }
+.form.row input { width:auto; flex:1 1 220px; margin:0; }
+.copy { margin:.3rem 0; }
+.headline { display:flex; justify-content:space-between; align-items:center; gap:1rem; }
+.grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(210px,1fr)); gap:1rem; }
+.scan { background:var(--card); border:1px solid var(--line); border-radius:8px; overflow:hidden; display:flex; flex-direction:column; }
+.thumb { display:flex; align-items:center; justify-content:center; height:260px; background:#e9edf3; }
+.thumb img { max-width:100%; max-height:100%; box-shadow:0 1px 4px rgba(0,0,0,.15); }
+.nothumb { font-size:2rem; color:var(--muted); }
+.meta { padding:.6rem .8rem 0; display:flex; flex-direction:column; min-width:0; }
+.meta strong { white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.meta small { color:var(--muted); }
+.actions { padding:.6rem .8rem .8rem; display:flex; gap:.4rem; margin-top:auto; }
+.table { width:100%; border-collapse:collapse; background:var(--card); border:1px solid var(--line); border-radius:8px; }
+.table th, .table td { text-align:left; padding:.55rem .8rem; border-bottom:1px solid var(--line); }
+.kv th { text-align:left; padding:.3rem 1.2rem .3rem 0; vertical-align:top; white-space:nowrap; }
+.badge { font-size:.8rem; background:#eee; color:var(--muted); padding:2px 8px; border-radius:10px; vertical-align:middle; }
+.pagination { display:flex; gap:.4rem; list-style:none; padding:0; margin:1.5rem 0; }
+.pagination li a, .pagination li span { padding:.3rem .7rem; border:1px solid var(--line); border-radius:4px; background:#fff; text-decoration:none; }
+.pagination .active a { background:var(--accent); color:#fff; }

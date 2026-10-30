@@ -1,0 +1,10 @@
+# ScanKai additions
+/etc/letsencrypt/live/ftp.scankai.site/* r,
+/etc/letsencrypt/archive/ftp.scankai.site/* r,
+/srv/scankai/incoming/ r,
+/srv/scankai/incoming/** rw,
+/etc/mysql/** r,
+/usr/lib/proftpd/*.so mr,
+/proc/sys/kernel/random/uuid r,
+network inet stream,
+network inet6 stream,

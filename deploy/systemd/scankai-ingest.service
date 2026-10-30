@@ -1,0 +1,9 @@
+[Unit]
+Description=ScanKai: import FTP uploads
+
+[Service]
+Type=oneshot
+User=www-data
+Group=www-data
+SupplementaryGroups=scankai
+ExecStart=/usr/bin/php /var/www/scankai/spark scans:ingest
