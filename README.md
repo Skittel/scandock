@@ -87,6 +87,11 @@ writes `/backup/<yyyymmdd-hhiiss>.tgz` with database dump, scans, project (incl.
 (ProFTPD, AppArmor, systemd units, vhost helper, fail2ban) lives in
 [`deploy/`](deploy/).
 
+## Documentation
+
+Project documentation (German) is in [`docs/`](docs/), changes in
+[`CHANGELOG.md`](CHANGELOG.md). Customer guides: https://wiki.skit.center/books/scandockpub
+
 ## Versioning
 
 `major.minor.patch`, each part 0–999. Current version: see `app/Config/ScanDock.php`.

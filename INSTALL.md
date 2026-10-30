@@ -88,7 +88,8 @@ grep -rln 'scandock\.cloud' app/Config deploy
 In `app/Config/ScanDock.php` also check `letsEncryptEmail`, `operatorLogo`,
 `operatorName`, `operatorUrl` and the limits (`maxUploadBytes`,
 `minFreeBytes`, `defaultRetentionDays`). In `deploy/sbin/scandock-site` set
-`EMAIL`, in `deploy/fail2ban/scandock.conf` the `ignoreip` addresses.
+`EMAIL`, in `deploy/fail2ban/scandock.conf` replace `ADMIN_IPS_HERE` with
+your admin addresses.
 
 ## 4. Database
 
