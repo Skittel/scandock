@@ -12,7 +12,7 @@ class ScanKai extends BaseConfig
     /**
      * Application version (major.minor.patch, each 0-999).
      */
-    public string $version = '0.0.12';
+    public string $version = '0.0.13';
 
     /**
      * Logo and homepage of the operator, shown in the header next to the
@@ -71,9 +71,10 @@ class ScanKai extends BaseConfig
 
     /**
      * Minimum age in seconds of an uploaded file before it is ingested.
-     * Guards against files that are still being written.
+     * ProFTPD writes uploads under a hidden name (HiddenStores) and renames
+     * them when complete, so a short delay is sufficient.
      */
-    public int $ingestMinAge = 10;
+    public int $ingestMinAge = 1;
 
     /**
      * Let's Encrypt settings for tenant certificates.

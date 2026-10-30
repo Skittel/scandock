@@ -23,6 +23,8 @@ the scans. Scans are deleted automatically after a configurable number of days
   persons and Entra groups, with directory autocomplete); admin rights do not
   grant access to private scans
 - Customer logo and company name in the header (set by admins)
+- Placeholder with file name and status while an upload is running or being
+  processed; the scan page refreshes itself
 - PDF thumbnails, inline preview, download, delete
 - Automatic deletion after the retention period
 - Warning for admins 30 days before the Entra client secret expires; admins
@@ -42,7 +44,8 @@ scankai tenant:link-renew <slug>                 # new start link (tenant stays 
 scankai tenant:list
 scankai tenant:rename <slug> "Display name"
 scankai tenant:status <slug> disable|enable
-scankai scans:ingest                             # run by systemd timer every 20 s
+scankai scans:ingest                             # run by the upload watcher (inotify) right
+                                                 # after each upload, timer every 20 s as fallback
 scankai scans:purge                              # run by systemd timer daily
 ```
 

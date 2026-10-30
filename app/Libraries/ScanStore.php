@@ -64,6 +64,38 @@ class ScanStore
     }
 
     /**
+     * Files that are still being uploaded or waiting for the import, per FTP
+     * account. Used to show placeholders right after an upload.
+     *
+     * @param list<int> $accountIds
+     *
+     * @return array<int, list<array{name: string, state: string, size: int}>>
+     */
+    public function pendingUploads(array $accountIds): array
+    {
+        $manager = service('ftpAccountManager');
+        $pending = [];
+
+        foreach ($accountIds as $accountId) {
+            $dir = $manager->incomingDirectory((int) $accountId);
+            foreach (is_dir($dir) ? (scandir($dir) ?: []) : [] as $name) {
+                $path = $dir . '/' . $name;
+                if ($name === '.' || $name === '..' || ! is_file($path)) {
+                    continue;
+                }
+                // HiddenStores: ".in.<name>." while the transfer is running.
+                if (preg_match('/^\.in\.(.+)\.$/s', $name, $m) === 1) {
+                    $pending[$accountId][] = ['name' => $m[1], 'state' => 'uploading', 'size' => (int) filesize($path)];
+                } elseif ($name[0] !== '.') {
+                    $pending[$accountId][] = ['name' => $name, 'state' => 'processing', 'size' => (int) filesize($path)];
+                }
+            }
+        }
+
+        return $pending;
+    }
+
+    /**
      * Deletes scans that are older than the retention period of their tenant.
      *
      * @return int number of deleted scans

@@ -14,7 +14,7 @@
 <?php if ($sections === []): ?>
     <div class="card"><p>Ihnen ist noch kein Gerät zugeordnet. Bitte wenden Sie sich an Ihren Administrator.</p></div>
 <?php else: ?>
-<div class="accordion" data-save-url="<?= esc(site_url('scans/collapsed'), 'attr') ?>">
+<div class="accordion" data-save-url="<?= esc(site_url('scans/collapsed'), 'attr') ?>" data-status-url="<?= esc(site_url('scans/status'), 'attr') ?>">
     <?php foreach ($sections as $section): $account = $section['account']; ?>
     <details class="account" data-account="<?= $account['id'] ?>" <?= in_array((int) $account['id'], $collapsed, true) ? '' : 'open' ?>>
         <summary>
@@ -23,10 +23,21 @@
             <span class="count"><?= $section['total'] ?> Scan<?= $section['total'] === 1 ? '' : 's' ?></span>
         </summary>
         <div class="account-body">
-            <?php if ($section['scans'] === []): ?>
+            <?php $waiting = $pending[(int) $account['id']] ?? [] ?>
+            <?php if ($section['scans'] === [] && $waiting === []): ?>
                 <p class="muted">Keine Scans vorhanden.</p>
             <?php else: ?>
             <div class="grid">
+                <?php foreach ($waiting as $file): ?>
+                <article class="scan pending">
+                    <div class="thumb"><span class="spinner" aria-hidden="true"></span></div>
+                    <div class="meta">
+                        <strong title="<?= esc($file['name'], 'attr') ?>"><?= esc($file['name']) ?></strong>
+                        <small><?= $file['state'] === 'uploading' ? 'Wird übertragen …' : 'Wird verarbeitet …' ?> · <?= number_to_size($file['size'], 1, 'de') ?></small>
+                    </div>
+                    <div class="actions"><span class="badge">ausstehend</span></div>
+                </article>
+                <?php endforeach ?>
                 <?php foreach ($section['scans'] as $scan): ?>
                 <article class="scan">
                     <a href="/scans/<?= $scan['id'] ?>/view" target="_blank" rel="noopener" class="thumb">

@@ -38,9 +38,32 @@ class Scans extends BaseController
 
         return $this->render('scans/index', [
             'sections'  => $sections,
+            'pending'   => service('scanStore')->pendingUploads($accountIds),
             'pager'     => $scans->pager,
             'collapsed' => UserModel::collapsedAccounts($user),
             'expires'   => (int) $tenant['retention_days'],
+        ]);
+    }
+
+    /**
+     * Small fingerprint of the visible scans and pending uploads. The page
+     * polls it and reloads the list when it changes.
+     */
+    public function status(): ResponseInterface
+    {
+        $tenant     = $this->tenant();
+        $accountIds = service('scanAccess')->visibleAccountIds($tenant, $this->currentUser());
+        $pending    = service('scanStore')->pendingUploads($accountIds);
+        $latest     = $accountIds === [] ? null : model(ScanModel::class)
+            ->select('COUNT(*) AS n, MAX(id) AS max_id')
+            ->where('tenant_id', $tenant['id'])->whereIn('ftp_account_id', $accountIds)
+            ->get()->getRowArray();
+
+        $pendingKey = array_map(static fn ($files) => array_map(static fn ($f) => $f['name'] . ':' . $f['state'], $files), $pending);
+
+        return $this->response->setHeader('Cache-Control', 'no-store')->setJSON([
+            'fingerprint' => md5(json_encode([$accountIds, $latest, $pendingKey])),
+            'pending'     => array_sum(array_map('count', $pending)),
         ]);
     }
 

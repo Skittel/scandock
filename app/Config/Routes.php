@@ -26,6 +26,7 @@ $routes->group('auth', ['filter' => 'tenant:any'], static function ($routes) {
 $routes->group('scans', ['filter' => ['tenant', 'auth']], static function ($routes) {
     $routes->get('/', 'Scans::index');
     $routes->post('collapsed', 'Scans::saveCollapsed');
+    $routes->get('status', 'Scans::status');
     $routes->get('(:num)/view', 'Scans::view/$1');
     $routes->get('(:num)/download', 'Scans::download/$1');
     $routes->get('(:num)/thumbnail', 'Scans::thumbnail/$1');
