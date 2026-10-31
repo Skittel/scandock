@@ -1,6 +1,6 @@
 # Projektdokumentation ScanDock
 
-Dokumentation des Projekts (Deutsch). Installation: [`../INSTALL.md`](../INSTALL.md) (Englisch, ungetestet). Änderungen: [`../CHANGELOG.md`](../CHANGELOG.md).
+Kopie der Projektdokumentation (Deutsch). Maßgeblich ist das (nicht öffentliche) Projekt-Wiki des Betreibers; diese Dateien sind eine bereinigte Kopie ohne Kundendaten. Installation: [`../INSTALL.md`](../INSTALL.md) (Englisch, ungetestet). Änderungen: [`../CHANGELOG.md`](../CHANGELOG.md).
 
 | Bereich | Inhalt |
 |---|---|

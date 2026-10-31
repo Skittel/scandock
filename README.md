@@ -89,7 +89,8 @@ writes `/backup/<yyyymmdd-hhiiss>.tgz` with database dump, scans, project (incl.
 
 ## Documentation
 
-Project documentation (German) is in [`docs/`](docs/), changes in
+The authoritative project documentation is kept in the operator's (private) wiki;
+a sanitized copy (German) is in [`docs/`](docs/), changes in
 [`CHANGELOG.md`](CHANGELOG.md). Customer guides: https://wiki.skit.center/books/scandockpub
 
 ## Versioning
