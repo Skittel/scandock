@@ -57,8 +57,8 @@ poppler-utils · certbot
 
 ## Installation
 
-See [INSTALL.md](INSTALL.md) for setting up ScanDock on an empty Ubuntu
-server. **The guide is untested** – it was written from the production
+The installation guide for an empty Ubuntu server is in the public wiki (German):
+https://wiki.skit.center/link/983 **The guide is untested** – it was written from the production
 configuration and has not yet been run on a fresh machine.
 
 ## Operations
@@ -94,10 +94,10 @@ https://wiki.skit.center/books/scandockpub
 
 - User guides: https://wiki.skit.center/books/scandockpub/chapter/benutzer
 - Admin guides: https://wiki.skit.center/books/scandockpub/chapter/verwaltung-admins
+- Installation, operation (CLI) and troubleshooting:
+  https://wiki.skit.center/books/scandockpub/chapter/installation-betrieb-fehlersuche
 - Project description, design decisions and changelog:
   https://wiki.skit.center/books/scandockpub/chapter/projekt-technik
-
-Installation on a new server: [`INSTALL.md`](INSTALL.md).
 
 ## Versioning
 
