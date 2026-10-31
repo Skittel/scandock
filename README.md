@@ -89,10 +89,15 @@ writes `/backup/<yyyymmdd-hhiiss>.tgz` with database dump, scans, project (incl.
 
 ## Documentation
 
-User and admin guides (German): https://wiki.skit.center/books/scandockpub
+The documentation is kept in the public wiki (German):
+https://wiki.skit.center/books/scandockpub
 
-Installation: [`INSTALL.md`](INSTALL.md), changes: [`CHANGELOG.md`](CHANGELOG.md).
-The internal project documentation is kept in the operator's private wiki.
+- User guides: https://wiki.skit.center/books/scandockpub/chapter/benutzer
+- Admin guides: https://wiki.skit.center/books/scandockpub/chapter/verwaltung-admins
+- Project description, design decisions and changelog:
+  https://wiki.skit.center/books/scandockpub/chapter/projekt-technik
+
+Installation on a new server: [`INSTALL.md`](INSTALL.md).
 
 ## Versioning
 
