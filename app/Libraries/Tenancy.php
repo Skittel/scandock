@@ -18,7 +18,7 @@ class Tenancy
     }
 
     /**
-     * Returns the slug for a host like "beecken.scandock.cloud", or null if the
+     * Returns the slug for a host like "firma.scandock.cloud", or null if the
      * host is the bare base domain or does not belong to ScanDock.
      */
     public function slugFromHost(string $host): ?string

@@ -17,7 +17,7 @@ class TenantCreate extends BaseCommand
     protected $name        = 'tenant:create';
     protected $description = 'Creates a tenant (vhost, Let\'s Encrypt certificate) and prints its start link.';
     protected $usage       = 'tenant:create <slug> [--name "Display name"]';
-    protected $arguments   = ['slug' => 'Subdomain, e.g. "beecken" for beecken.scandock.cloud'];
+    protected $arguments   = ['slug' => 'Subdomain, e.g. "firma" for firma.scandock.cloud'];
     protected $options     = ['--name' => 'Display name of the customer (defaults to the slug)'];
 
     public function run(array $params)
